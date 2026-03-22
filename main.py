@@ -6,6 +6,8 @@ FastAPI 기반 + Supabase 연동
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from datetime import datetime
@@ -380,17 +382,33 @@ async def get_lawmaker_detail(lawmaker_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============== 정적 파일 서빙 (웹 프론트엔드) ==============
+
+@app.get("/manifest.json")
+async def manifest():
+    return FileResponse(Path(__file__).parent / "manifest.json")
+
+@app.get("/sw.js")
+async def service_worker():
+    return FileResponse(Path(__file__).parent / "sw.js", media_type="application/javascript")
+
+@app.get("/app")
+async def serve_frontend():
+    return FileResponse(Path(__file__).parent / "index.html")
+
+
 # 서버 실행
 if __name__ == "__main__":
     import uvicorn
 
     print("AI 정당 API 서버 시작...")
+    print("웹사이트: http://localhost:8000/app")
     print("API 문서: http://localhost:8000/docs")
     print("DB: Supabase PostgreSQL")
 
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=8000,
+        port=int(os.getenv("PORT", 8000)),
         log_level="info"
     )
