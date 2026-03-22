@@ -930,7 +930,10 @@ async def get_current_research():
         year = now.year
         week = topic["week_number"]
 
+        # topic_id로도 조회 (시간대 차이 대비)
         result = supabase_admin.table("weekly_research").select("*").eq("year", year).eq("week_number", week).execute()
+        if not result.data and topic.get("id"):
+            result = supabase_admin.table("weekly_research").select("*").eq("topic_id", topic["id"]).order("created_at", desc=True).limit(1).execute()
         research = result.data[0] if result.data else None
 
         # 요일 기반 진행 단계
@@ -976,9 +979,15 @@ async def get_current_research():
 async def get_research_archive():
     """완료된 정책 연구 목록"""
     try:
-        result = supabase_admin.table("weekly_research").select(
-            "*, policy_topics(name, description, icon, category_group)"
-        ).in_("status", ["draft", "review", "finalized"]).order("created_at", desc=True).execute()
+        try:
+            result = supabase_admin.table("weekly_research").select(
+                "*, policy_topics(name, description, icon, category_group)"
+            ).in_("status", ["draft", "review", "finalized"]).order("created_at", desc=True).execute()
+        except Exception:
+            # 조인 실패 시 단독 조회
+            result = supabase_admin.table("weekly_research").select("*").in_(
+                "status", ["draft", "review", "finalized"]
+            ).order("created_at", desc=True).execute()
         return {"researches": result.data or [], "total": len(result.data or [])}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
