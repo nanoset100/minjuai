@@ -7,9 +7,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
-# .env 로드
+# .env 로드 (로컬 개발용, Railway에서는 환경변수 자동 주입)
 env_path = Path(__file__).parent / "config" / ".env"
-load_dotenv(env_path, override=True)
+if env_path.exists():
+    load_dotenv(env_path, override=True)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
