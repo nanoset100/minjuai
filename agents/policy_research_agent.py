@@ -366,7 +366,12 @@ class PolicyResearchAgent:
     # ─── 솔루션 엔진 ───
 
     def solve_policy_question(self, db, question: str) -> Dict[str, Any]:
-        """시민 질문에 대해 온톨로지 기반 솔루션 도출"""
+        """시민 질문에 대해 온톨로지 기반 솔루션 도출
+
+        Returns:
+            앱(chat_screen.dart)이 기대하는 통일 포맷:
+            - question, solution, confidence, agents_used, global_cases, status
+        """
         all_research = db.table("weekly_research").select(
             "*, policy_topics(name, category_group)"
         ).eq("status", "draft").execute()
@@ -383,18 +388,24 @@ class PolicyResearchAgent:
             for g in (global_result.data or [])
         ])
 
-        solution_text = self._ai_call(
+        # AI에게 구조화된 JSON 응답 요청
+        raw_text = self._ai_call(
             system="""당신은 AI 정당의 정책 솔루션 엔진입니다.
 시민의 질문에 대해 근거 기반 해법을 제시하세요.
 
-응답 형식:
-1. 문제 정의 (데이터 기반, 2~3문장)
-2. 글로벌 사례 (최소 3개국, 각 1~2문장)
-3. AI 솔루션 (단기/중기/장기 구분)
-4. 실현가능성 점수 (0~100)
-5. 예산 추정
+반드시 아래 JSON 형식으로만 응답하세요 (설명 없이 JSON만):
+{
+  "solution": "■ 문제 정의\\n(데이터 기반 2~3문장)\\n\\n■ AI 솔루션\\n- 단기: ...\\n- 중기: ...\\n- 장기: ...\\n\\n■ 예산 추정\\n...",
+  "confidence": 0부터 100 사이의 실현가능성 점수,
+  "global_cases": [
+    {"country": "국가명", "summary": "해당 국가의 관련 정책 사례 1~2문장"},
+    {"country": "국가명", "summary": "해당 국가의 관련 정책 사례 1~2문장"},
+    {"country": "국가명", "summary": "해당 국가의 관련 정책 사례 1~2문장"}
+  ]
+}
 
-관련 기존 정책이 있으면 연결해서 시너지를 설명하세요.""",
+global_cases는 최소 3개국, 최대 6개국을 포함하세요.
+confidence는 근거가 충분하면 높게, 불확실하면 낮게 설정하세요.""",
             prompt=f"""시민 질문: {question}
 
 기존 연구된 정책:
@@ -403,23 +414,56 @@ class PolicyResearchAgent:
 글로벌 사례 DB:
 {global_context if global_context else '아직 없음'}
 
-이 질문에 대한 근거 기반 솔루션을 제시해주세요.""",
+이 질문에 대한 근거 기반 솔루션을 JSON으로 제시해주세요.""",
         )
 
+        # JSON 파싱
+        parsed = self._parse_solution_json(raw_text)
+
+        # 에이전트 활동 로그
         try:
             db.table("agent_activities").insert({
                 "agent_id": "solution_engine",
                 "action": "정책 솔루션 도출",
                 "detail": question[:200],
                 "status": "success",
-                "result_summary": solution_text[:200],
+                "result_summary": parsed["solution"][:200],
             }).execute()
         except Exception:
             pass
 
         return {
             "question": question,
-            "solution": solution_text,
-            "related_research_count": len(all_research.data or []),
-            "global_cases_referenced": len(global_result.data or []),
+            "solution": parsed["solution"],
+            "confidence": parsed["confidence"],
+            "agents_used": ["orchestrator", "policy_research", "analytics"],
+            "global_cases": parsed["global_cases"],
+            "status": "success",
         }
+
+    def _parse_solution_json(self, raw_text: str) -> Dict[str, Any]:
+        """솔루션 AI 응답에서 JSON 추출 및 파싱"""
+        import re
+
+        text = raw_text.strip()
+
+        # ```json ... ``` 코드블록 제거
+        if "```json" in text:
+            text = text.split("```json")[1].split("```")[0]
+        elif "```" in text:
+            text = text.split("```")[1].split("```")[0]
+
+        try:
+            data = json.loads(text.strip())
+            return {
+                "solution": data.get("solution", raw_text),
+                "confidence": min(max(int(data.get("confidence", 70)), 0), 100),
+                "global_cases": data.get("global_cases", []),
+            }
+        except (json.JSONDecodeError, ValueError):
+            # JSON 파싱 실패 시 원본 텍스트를 solution으로 사용
+            return {
+                "solution": raw_text,
+                "confidence": 65,
+                "global_cases": [],
+            }
