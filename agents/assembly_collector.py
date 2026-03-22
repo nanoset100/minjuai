@@ -107,7 +107,7 @@ class AssemblyCollector:
                 "homepage": row.get("HOMEPAGE", ""),
                 "office": row.get("ASSEM_ADDR", ""),
                 "career": row.get("MEM_TITLE", ""),
-                "photo_url": f"https://www.assembly.go.kr/photo/9770{row.get('MONA_CD', '')}.jpg",
+                "photo_url": f"https://www.assembly.go.kr/static/portal/img/openassm/{row.get('MONA_CD', '')}.jpg",
                 "collected_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
             }
             lawmakers.append(lm)
