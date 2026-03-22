@@ -54,6 +54,22 @@ batch_helper = BatchHelper()            # 6. 배치 처리 (비용절감)
 policy_research = PolicyResearchAgent()  # 7. 주간 정책 연구 (온톨로지)
 
 
+# ============== 서버 시작 시 데이터 자동 로드 ==============
+
+@app.on_event("startup")
+async def startup_load_data():
+    """서버 시작 시 국회 데이터 자동 로드 (캐시 없으면 API 호출)"""
+    try:
+        if not monitoring_agent.lawmakers:
+            print("[STARTUP] 국회 데이터 로드 중...")
+            monitoring_agent.refresh_data()
+            print(f"[STARTUP] 국회 데이터 로드 완료: {len(monitoring_agent.lawmakers)}명")
+        else:
+            print(f"[STARTUP] 캐시된 국회 데이터 사용: {len(monitoring_agent.lawmakers)}명")
+    except Exception as e:
+        print(f"[STARTUP] 국회 데이터 로드 실패 (수동 refresh 필요): {e}")
+
+
 # ============== 에이전트 활동 로그 시스템 ==============
 
 # 실시간 활동 로그 (최근 100개 유지)
