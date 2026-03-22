@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>민주AI - AI 기반 투명한 정당</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        /* 헤더 */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-links a:hover {
+            opacity: 0.8;
+        }
+        
+        /* 히어로 섹션 */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 120px 2rem 80px;
+            text-align: center;
+            margin-top: 60px;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        /* 통계 섹션 */
+        .stats {
+            background: #f8f9fa;
+            padding: 4rem 2rem;
+        }
+        
+        .stats-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* 챗봇 섹션 */
+        .chatbot-section {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+        
+        .chatbot-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .chatbot-header {
+            background: #667eea;
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .chatbot-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            max-width: 70%;
+        }
+        
+        .message-user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .message-bot {
+            background: white;
+            margin-right: auto;
+        }
+        
+        .chatbot-input {
+            display: flex;
+            padding: 1.5rem;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .chatbot-input input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        
+        .chatbot-input button {
+            margin-left: 1rem;
+            padding: 0.75rem 2rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        /* 정책 섹션 */
+        .policies {
+            max-width: 1200px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+        
+        .policy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .policy-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .policy-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+        
+        .policy-status {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status-voting {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+        
+        .status-approved {
+            background: #55efc4;
+            color: #00b894;
+        }
+        
+        /* 푸터 */
+        footer {
+            background: #2d3436;
+            color: white;
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header>
+        <nav>
+            <div class="logo">🏛️ 민주AI</div>
+            <ul class="nav-links">
+                <li><a href="#about">소개</a></li>
+                <li><a href="#policies">정책</a></li>
+                <li><a href="#chat">상담</a></li>
+                <li><a href="#join">참여하기</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <!-- 히어로 섹션 -->
+    <section class="hero">
+        <h1>🤖 AI와 함께 만드는 투명한 정치</h1>
+        <p>시민이 직접 참여하고, AI가 효율적으로 운영하는 새로운 정당</p>
+        <div class="cta-buttons">
+            <button class="btn btn-primary" onclick="scrollToChat()">💬 상담 시작</button>
+            <button class="btn btn-secondary" onclick="alert('준비 중입니다!')">📝 당원 가입</button>
+        </div>
+    </section>
+    
+    <!-- 통계 섹션 -->
+    <section class="stats">
+        <div class="stats-container" id="stats-container">
+            <div class="loading">통계 로딩 중...</div>
+        </div>
+    </section>
+    
+    <!-- 챗봇 섹션 -->
+    <section class="chatbot-section" id="chat">
+        <h2 class="section-title">💬 AI 상담원과 대화하기</h2>
+        <div class="chatbot-container">
+            <div class="chatbot-header">
+                <h3>24/7 자동 상담 서비스</h3>
+                <p>궁금한 점을 물어보세요!</p>
+            </div>
+            <div class="chatbot-messages" id="chatMessages">
+                <div class="message message-bot">
+                    안녕하세요! 민주AI 상담원입니다. 😊<br>
+                    궁금하신 점을 편하게 물어보세요!
+                </div>
+            </div>
+            <div class="chatbot-input">
+                <input 
+                    type="text" 
+                    id="userInput" 
+                    placeholder="메시지를 입력하세요..."
+                    onkeypress="if(event.key==='Enter') sendMessage()"
+                >
+                <button onclick="sendMessage()">전송</button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 정책 섹션 -->
+    <section class="policies">
+        <h2 class="section-title">📋 주요 정책</h2>
+        <div class="policy-grid" id="policy-grid">
+            <div class="loading">정책 로딩 중...</div>
+        </div>
+    </section>
+
+    <!-- 정책 제안 섹션 -->
+    <section id="propose" style="padding: 60px 2rem; background: #f8f9fa;">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <h2 class="section-title">💡 정책 제안하기</h2>
+
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <input type="text" id="policyTitle" placeholder="정책 제목"
+                       style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box;">
+
+                <textarea id="policyDescription" placeholder="정책 내용을 설명해주세요 (최대 500자)"
+                          maxlength="500"
+                          style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 8px; min-height: 120px; font-size: 1rem; font-family: inherit; resize: vertical; box-sizing: border-box;"></textarea>
+
+                <select id="policyCategory"
+                        style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box;">
+                    <option value="">카테고리 선택</option>
+                    <option value="경제">경제</option>
+                    <option value="복지">복지</option>
+                    <option value="교육">교육</option>
+                    <option value="환경">환경</option>
+                    <option value="교통">교통</option>
+                </select>
+
+                <button onclick="submitPolicy()"
+                        style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: transform 0.2s;"
+                        onmouseover="this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.transform='none'">
+                    📝 제안 제출하기
+                </button>
+
+                <div id="policyResult" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 제출된 정책 목록 섹션 -->
+    <section style="padding: 60px 2rem;">
+        <div style="max-width: 1000px; margin: 0 auto;">
+            <h2 class="section-title">📊 제출된 정책 제안</h2>
+            <div id="proposalList" style="display: flex; flex-direction: column; gap: 20px;">
+                <div class="loading">정책 제안 로딩 중...</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 푸터 -->
+    <footer>
+        <div class="footer-content">
+            <h3>🏛️ 민주AI</h3>
+            <p>AI와 함께 만드는 투명하고 효율적인 정치</p>
+            <p style="margin-top: 2rem; opacity: 0.7;">
+                © 2026 민주AI. All rights reserved.<br>
+                이메일: info@ai-party.kr | GitHub: github.com/ai-political-party
+            </p>
+        </div>
+    </footer>
+    
+    <script>
+        const API_URL = 'http://localhost:8000';
+        
+        // 통계 로드
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_URL}/api/stats`);
+                const data = await response.json();
+                
+                const statsHTML = `
+                    <div class="stat-card">
+                        <div class="stat-number">${data.members.total.toLocaleString()}</div>
+                        <div class="stat-label">총 당원 수</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.policies.total}</div>
+                        <div class="stat-label">정책 제안</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.social.twitter_followers.toLocaleString()}</div>
+                        <div class="stat-label">SNS 팔로워</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.support.avg_response_time}</div>
+                        <div class="stat-label">평균 응답 시간</div>
+                    </div>
+                `;
+                
+                document.getElementById('stats-container').innerHTML = statsHTML;
+            } catch (error) {
+                console.error('통계 로드 실패:', error);
+            }
+        }
+        
+        // 정책 로드
+        async function loadPolicies() {
+            try {
+                const response = await fetch(`${API_URL}/api/policies`);
+                const data = await response.json();
+                
+                const policiesHTML = data.policies.map(policy => `
+                    <div class="policy-card">
+                        <span class="policy-status status-${policy.status === '투표중' ? 'voting' : 'approved'}">
+                            ${policy.status}
+                        </span>
+                        <h3 class="policy-title">${policy.title}</h3>
+                        <p><strong>카테고리:</strong> ${policy.category}</p>
+                        <p><strong>찬성:</strong> ${policy.votes_for.toLocaleString()} | 
+                           <strong>반대:</strong> ${policy.votes_against.toLocaleString()}</p>
+                    </div>
+                `).join('');
+                
+                document.getElementById('policy-grid').innerHTML = policiesHTML;
+            } catch (error) {
+                console.error('정책 로드 실패:', error);
+            }
+        }
+        
+        // 챗봇 메시지 전송
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 사용자 메시지 표시
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // API 호출
+            try {
+                const response = await fetch(`${API_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversation_history: null
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // 봇 응답 표시
+                addMessage(data.text, 'bot');
+                
+            } catch (error) {
+                console.error('챗봇 오류:', error);
+                addMessage('죄송합니다. 일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.', 'bot');
+            }
+        }
+        
+        function addMessage(text, type) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${type}`;
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function scrollToChat() {
+            document.getElementById('chat').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 정책 제안 제출
+        async function submitPolicy() {
+            const title = document.getElementById('policyTitle').value.trim();
+            const description = document.getElementById('policyDescription').value.trim();
+            const category = document.getElementById('policyCategory').value;
+            const resultDiv = document.getElementById('policyResult');
+
+            if (!title || !description || !category) {
+                resultDiv.innerHTML = `
+                    <div style="padding: 15px; background: #fff3cd; border-radius: 8px; color: #856404;">
+                        ⚠️ 모든 항목을 입력해주세요.
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/policies/submit`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({title, description, category})
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    resultDiv.innerHTML = `
+                        <div style="padding: 15px; background: #f8d7da; border-radius: 8px; color: #721c24;">
+                            ❌ ${result.error}
+                        </div>
+                    `;
+                    return;
+                }
+
+                resultDiv.innerHTML = `
+                    <div style="padding: 15px; background: #d4edda; border-radius: 8px; color: #155724;">
+                        ✅ ${result.message}<br>
+                        제안 ID: ${result.proposal.id}
+                    </div>
+                `;
+
+                document.getElementById('policyTitle').value = '';
+                document.getElementById('policyDescription').value = '';
+                document.getElementById('policyCategory').value = '';
+
+                loadProposals();
+
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div style="padding: 15px; background: #f8d7da; border-radius: 8px; color: #721c24;">
+                        ❌ 서버 연결 실패. 잠시 후 다시 시도해주세요.
+                    </div>
+                `;
+            }
+        }
+
+        // 제출된 정책 제안 목록 로드
+        async function loadProposals() {
+            try {
+                const response = await fetch(`${API_URL}/api/policies/list`);
+                const data = await response.json();
+
+                if (!data.proposals || data.proposals.length === 0) {
+                    document.getElementById('proposalList').innerHTML = '<p style="text-align:center;color:#666;">아직 제출된 제안이 없습니다.</p>';
+                    return;
+                }
+
+                const html = data.proposals.map(p => {
+                    const hasAnalysis = p.analysis && !p.analysis.parse_error;
+                    const score = hasAnalysis ? p.analysis.feasibility_score : null;
+                    const scoreColor = score >= 70 ? '#00b894' : score >= 40 ? '#fdcb6e' : '#d63031';
+                    const statusBg = p.status === '분석완료' ? '#d4edda' : '#e2e3e5';
+                    const statusColor = p.status === '분석완료' ? '#155724' : '#383d41';
+
+                    let analysisHTML = '';
+                    if (hasAnalysis) {
+                        const a = p.analysis;
+                        analysisHTML = `
+                            <div id="analysis-${p.id}" style="margin-top: 15px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid ${scoreColor};">
+                                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                                    <div style="width: 60px; height: 60px; border-radius: 50%; background: ${scoreColor}; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold;">${score}</div>
+                                    <div>
+                                        <div style="font-weight: bold; font-size: 1.1rem;">실현가능성 점수</div>
+                                        <div style="color: #666; font-size: 0.9rem;">${a.summary}</div>
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                                    <div style="padding: 10px; background: white; border-radius: 6px;"><strong>예산:</strong> ${a.budget_estimate}</div>
+                                    <div style="padding: 10px; background: white; border-radius: 6px;"><strong>수혜자:</strong> ${a.expected_beneficiaries}</div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                    <div style="padding: 10px; background: #d4edda; border-radius: 6px;">
+                                        <strong style="color: #155724;">장점</strong>
+                                        <ul style="margin: 5px 0 0 15px; font-size: 0.9rem;">${(a.pros||[]).map(x => '<li>'+x+'</li>').join('')}</ul>
+                                    </div>
+                                    <div style="padding: 10px; background: #f8d7da; border-radius: 6px;">
+                                        <strong style="color: #721c24;">단점</strong>
+                                        <ul style="margin: 5px 0 0 15px; font-size: 0.9rem;">${(a.cons||[]).map(x => '<li>'+x+'</li>').join('')}</ul>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 10px; padding: 10px; background: #cce5ff; border-radius: 6px;">
+                                    <strong style="color: #004085;">개선 제안</strong>
+                                    <ul style="margin: 5px 0 0 15px; font-size: 0.9rem;">${(a.recommendations||[]).map(x => '<li>'+x+'</li>').join('')}</ul>
+                                </div>
+                            </div>`;
+                    }
+
+                    const analyzeBtn = hasAnalysis
+                        ? `<button disabled style="padding: 8px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; font-size: 0.85rem; cursor: default;">분석 완료</button>`
+                        : `<button onclick="analyzeProposal('${p.id}')" id="btn-${p.id}" style="padding: 8px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer;">🔍 AI 분석</button>`;
+
+                    return `
+                        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                <div>
+                                    <span style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; background: ${statusBg}; color: ${statusColor};">${p.status}</span>
+                                    <span style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; background: #e8eaf6; color: #3949ab;">${p.category}</span>
+                                </div>
+                                ${analyzeBtn}
+                            </div>
+                            <h3 style="margin: 12px 0 8px; color: #333; font-size: 1.2rem;">${p.title}</h3>
+                            <p style="color: #666; font-size: 0.95rem;">${p.description}</p>
+                            ${analysisHTML}
+                        </div>`;
+                }).join('');
+
+                document.getElementById('proposalList').innerHTML = html;
+            } catch (error) {
+                console.error('제안 목록 로드 실패:', error);
+            }
+        }
+
+        // AI 분석 요청
+        async function analyzeProposal(id) {
+            const btn = document.getElementById('btn-' + id);
+            btn.disabled = true;
+            btn.textContent = '⏳ 분석 중...';
+            btn.style.background = '#6c757d';
+
+            try {
+                const response = await fetch(`${API_URL}/api/policies/${id}/analyze`, { method: 'POST' });
+                const result = await response.json();
+
+                if (result.detail) {
+                    btn.textContent = '❌ 실패';
+                    btn.style.background = '#d63031';
+                    return;
+                }
+
+                // 목록 전체 새로고침
+                await loadProposals();
+
+            } catch (error) {
+                btn.textContent = '❌ 실패';
+                btn.style.background = '#d63031';
+            }
+        }
+
+        // 페이지 로드 시 데이터 불러오기
+        window.addEventListener('load', () => {
+            loadStats();
+            loadPolicies();
+            loadProposals();
+        });
+    </script>
+</body>
+</html>
