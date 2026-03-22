@@ -1018,6 +1018,21 @@ async def get_election_dashboard():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============== 진단 ==============
+
+@app.get("/api/debug/env")
+async def debug_env():
+    """환경변수 확인 (키 값은 마스킹)"""
+    openai_key = os.getenv("OPENAI_API_KEY", "")
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    return {
+        "OPENAI_API_KEY": f"{openai_key[:8]}...{openai_key[-4:]}" if len(openai_key) > 12 else ("SET" if openai_key else "NOT_SET"),
+        "ANTHROPIC_API_KEY": f"{anthropic_key[:8]}...{anthropic_key[-4:]}" if len(anthropic_key) > 12 else ("SET" if anthropic_key else "NOT_SET"),
+        "PARTY_NAME": os.getenv("PARTY_NAME", "NOT_SET"),
+        "SUPABASE_URL": "SET" if os.getenv("SUPABASE_URL") else "NOT_SET",
+    }
+
+
 # ============== 정적 파일 서빙 (웹 프론트엔드) ==============
 
 @app.get("/manifest.json")
