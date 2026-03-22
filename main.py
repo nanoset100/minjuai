@@ -1018,6 +1018,50 @@ async def get_election_dashboard():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============== 비용 최적화 대시보드 ==============
+
+# GPT-4o mini 비용 (per 1M tokens)
+COST_PER_1M_INPUT = 0.15    # $0.15
+COST_PER_1M_OUTPUT = 0.60   # $0.60
+AVG_INPUT_TOKENS = 800      # 평균 입력 토큰
+AVG_OUTPUT_TOKENS = 500     # 평균 출력 토큰
+
+@app.get("/api/cost/stats")
+async def get_cost_stats():
+    """비용 최적화 현황 대시보드"""
+    # 캐시 통계
+    support_cache = support_agent.get_cache_stats()
+    hashtag_cache = marketing_agent.get_hashtag_cache_stats()
+
+    # API 호출 1회당 예상 비용
+    cost_per_call = (AVG_INPUT_TOKENS * COST_PER_1M_INPUT + AVG_OUTPUT_TOKENS * COST_PER_1M_OUTPUT) / 1_000_000
+
+    # 캐시로 절감한 호출 수
+    saved_calls = support_cache["hits"] + hashtag_cache["hits"]
+    saved_cost = saved_calls * cost_per_call
+
+    return {
+        "model": "gpt-4o-mini",
+        "cost_per_call": f"${cost_per_call:.6f}",
+        "caching": {
+            "support_agent": support_cache,
+            "marketing_hashtags": hashtag_cache,
+            "total_saved_calls": saved_calls,
+            "total_saved_cost": f"${saved_cost:.4f}",
+        },
+        "schedule_optimization": {
+            "batch_api": "weekly_strategy (50% discount)",
+            "off_peak": "Sun 21:00 batch submit",
+            "distributed": "7AM marketing, 8AM briefing, 23PM report",
+        },
+        "monthly_estimate": {
+            "without_optimization": "$12~15",
+            "with_optimization": "$5~8",
+            "savings_percent": "~50%",
+        },
+    }
+
+
 # ============== 진단 ==============
 
 @app.get("/api/debug/env")

@@ -5,6 +5,7 @@ SNS 콘텐츠 자동 생성 및 관리 시스템
 """
 
 import asyncio
+import hashlib
 import json
 import random
 from datetime import datetime, timedelta
@@ -86,7 +87,13 @@ class MarketingAgent:
         self.daily_post_count = 0
         self.daily_target = random.randint(3, 5)
 
-        logger.info(f"📱 마케팅 에이전트 초기화 완료 (오늘 목표: {self.daily_target}개 포스트)")
+        # 해시태그 캐시: {content_hash: {"tags": [...], "expires_at": datetime}}
+        self._hashtag_cache: Dict[str, Dict[str, Any]] = {}
+        self._hashtag_cache_hits = 0
+        self._hashtag_cache_misses = 0
+        self.HASHTAG_CACHE_TTL_HOURS = 12  # 해시태그는 12시간 캐시
+
+        logger.info(f"📱 마케팅 에이전트 초기화 완료 (오늘 목표: {self.daily_target}개, 해시태그 캐시 ON)")
 
     async def generate_daily_content(self) -> List[Dict[str, Any]]:
         """
@@ -250,11 +257,16 @@ JSON 형식으로 응답하세요:
         logger.error(f"포스트 생성 최종 실패 ({max_retries}회 시도): {last_error}")
         return None
 
+    def _hashtag_cache_key(self, content: str, platform: str) -> str:
+        """콘텐츠 해시로 캐시 키 생성 (앞 200자 기준)"""
+        normalized = f"{platform}:{content[:200].strip().lower()}"
+        return hashlib.md5(normalized.encode()).hexdigest()
+
     async def optimize_hashtags(
         self, content: str, platform: str = "twitter"
     ) -> List[str]:
         """
-        콘텐츠에 맞는 최적 해시태그 생성
+        콘텐츠에 맞는 최적 해시태그 생성 (캐시 우선)
 
         Args:
             content: 포스트 본문
@@ -268,6 +280,15 @@ JSON 형식으로 응답하세요:
 
         # 기본 해시태그 (항상 포함)
         base_tags = [f"#{self.party_name}", "#AI정치", "#디지털민주주의"]
+
+        # 캐시 확인
+        cache_key = self._hashtag_cache_key(content, platform)
+        cached = self._hashtag_cache.get(cache_key)
+        if cached and datetime.now() < cached["expires_at"]:
+            self._hashtag_cache_hits += 1
+            logger.debug(f"#️⃣ 해시태그 캐시 HIT (총 {self._hashtag_cache_hits}회)")
+            return cached["tags"]
+        self._hashtag_cache_misses += 1
 
         try:
             response = self.client.chat.completions.create(
@@ -289,16 +310,37 @@ JSON 형식으로 응답하세요:
             raw = response.choices[0].message.content
             extra_tags = self._parse_json_response(raw)
             if isinstance(extra_tags, list):
-                # # 접두사 확인 및 추가
                 extra_tags = [
                     tag if tag.startswith("#") else f"#{tag}" for tag in extra_tags
                 ]
-                return base_tags + extra_tags[:max_tags - len(base_tags)]
+                result_tags = base_tags + extra_tags[:max_tags - len(base_tags)]
+
+                # 캐시 저장
+                self._hashtag_cache[cache_key] = {
+                    "tags": result_tags,
+                    "expires_at": datetime.now() + timedelta(hours=self.HASHTAG_CACHE_TTL_HOURS),
+                }
+                # 캐시 크기 제한 (100개)
+                if len(self._hashtag_cache) > 100:
+                    oldest = min(self._hashtag_cache, key=lambda k: self._hashtag_cache[k]["expires_at"])
+                    del self._hashtag_cache[oldest]
+
+                return result_tags
 
         except Exception as e:
             logger.warning(f"해시태그 최적화 실패, 기본 태그 사용: {e}")
 
         return base_tags
+
+    def get_hashtag_cache_stats(self) -> Dict[str, Any]:
+        """해시태그 캐시 통계"""
+        total = self._hashtag_cache_hits + self._hashtag_cache_misses
+        return {
+            "cache_size": len(self._hashtag_cache),
+            "hits": self._hashtag_cache_hits,
+            "misses": self._hashtag_cache_misses,
+            "hit_rate": round(self._hashtag_cache_hits / max(total, 1) * 100, 1),
+        }
 
     async def schedule_posts(
         self, posts: Optional[List[Dict[str, Any]]] = None

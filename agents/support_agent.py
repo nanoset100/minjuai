@@ -6,7 +6,8 @@ AI 정당 고객지원팀 에이전트
 """
 
 import os
-from datetime import datetime
+import hashlib
+from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
@@ -26,7 +27,12 @@ class SupportAgent:
     - FAQ 자동 응답
     - 문의 분류 및 처리
     - 복잡한 문의는 사람에게 에스컬레이션
+    - 응답 캐싱 (동일/유사 질문 API 호출 절감)
     """
+
+    # 캐시 설정
+    CACHE_TTL_HOURS = 24       # 캐시 유효시간
+    CACHE_MAX_SIZE = 200       # 최대 캐시 항목 수
 
     def __init__(self):
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
@@ -42,7 +48,12 @@ class SupportAgent:
         # 문의 이력
         self.inquiry_history = []
 
-        logger.info(f"💬 {self.party_name} 고객지원 에이전트 초기화 (GPT-4o mini)")
+        # 응답 캐시: {hash: {"response": ..., "expires_at": datetime}}
+        self._response_cache: Dict[str, Dict[str, Any]] = {}
+        self._cache_hits = 0
+        self._cache_misses = 0
+
+        logger.info(f"💬 {self.party_name} 고객지원 에이전트 초기화 (GPT-4o mini + 24h 캐시)")
 
     def _build_system_prompt(self) -> str:
         """시스템 프롬프트 생성"""
@@ -199,13 +210,67 @@ AI가 정치인을 대체하는 것이 아니라,
         else:
             return '일반문의'
 
+    # ─── 캐싱 시스템 ───
+
+    def _cache_key(self, message: str, category: str) -> str:
+        """메시지+카테고리로 캐시 키 생성 (소문자 정규화)"""
+        normalized = f"{category}:{message.strip().lower()}"
+        return hashlib.md5(normalized.encode()).hexdigest()
+
+    def _get_cached(self, key: str) -> Optional[Dict[str, Any]]:
+        """캐시에서 응답 조회 (TTL 초과 시 None)"""
+        entry = self._response_cache.get(key)
+        if entry and datetime.now() < entry["expires_at"]:
+            self._cache_hits += 1
+            logger.debug(f"💾 캐시 HIT (총 {self._cache_hits}회)")
+            return entry["response"]
+        if entry:
+            del self._response_cache[key]  # 만료된 항목 제거
+        self._cache_misses += 1
+        return None
+
+    def _set_cached(self, key: str, response: Dict[str, Any]):
+        """캐시에 응답 저장"""
+        # 캐시 크기 제한: 초과 시 가장 오래된 항목 제거
+        if len(self._response_cache) >= self.CACHE_MAX_SIZE:
+            oldest_key = min(self._response_cache, key=lambda k: self._response_cache[k]["expires_at"])
+            del self._response_cache[oldest_key]
+
+        self._response_cache[key] = {
+            "response": response,
+            "expires_at": datetime.now() + timedelta(hours=self.CACHE_TTL_HOURS),
+        }
+
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """캐시 통계 반환"""
+        total = self._cache_hits + self._cache_misses
+        return {
+            "cache_size": len(self._response_cache),
+            "max_size": self.CACHE_MAX_SIZE,
+            "hits": self._cache_hits,
+            "misses": self._cache_misses,
+            "hit_rate": round(self._cache_hits / max(total, 1) * 100, 1),
+            "estimated_savings": f"~${self._cache_hits * 0.0003:.4f}",
+        }
+
+    # ─── AI 응답 생성 ───
+
     async def generate_response(
         self,
         user_message: str,
         conversation_history: List[Dict],
         category: str
     ) -> Dict[str, Any]:
-        """GPT-4o mini로 응답 생성"""
+        """GPT-4o mini로 응답 생성 (캐시 우선)"""
+
+        # 대화 이력이 없는 단독 질문만 캐싱 (맥락 의존 질문은 캐싱 X)
+        use_cache = len(conversation_history) == 0
+        cache_key = self._cache_key(user_message, category) if use_cache else None
+
+        if use_cache:
+            cached = self._get_cached(cache_key)
+            if cached:
+                return cached
 
         messages = [{"role": "system", "content": self._system_prompt}]
 
@@ -229,11 +294,17 @@ AI가 정치인을 대체하는 것이 아니라,
                 '불만', '항의', '환불', '법률', '소송'
             ]) or confidence < 0.7
 
-            return {
+            result = {
                 'text': response_text,
                 'confidence': confidence,
                 'requires_human': requires_human
             }
+
+            # 캐시 저장 (에스컬레이션 필요 없는 일반 응답만)
+            if use_cache and not requires_human:
+                self._set_cached(cache_key, result)
+
+            return result
 
         except Exception as e:
             logger.error(f"❌ 응답 생성 실패: {e}")
