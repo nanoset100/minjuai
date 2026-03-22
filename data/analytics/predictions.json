@@ -1,0 +1,45 @@
+{
+  "current_support_rate": 0.12,
+  "target_rate": 3.0,
+  "target_seats": 10,
+  "progress_percent": 4.0,
+  "days_until_election": 796,
+  "days_running": 1,
+  "required_monthly_growth": 93.0,
+  "scenarios": {
+    "optimistic": {
+      "description": "SNS 바이럴 + 핵심 이슈 선점",
+      "support_rate": 0.3,
+      "seats": 0,
+      "probability": 0.2,
+      "conditions": [
+        "주요 이슈에서 여론 주도",
+        "TV 토론 성과",
+        "청년층 투표율 상승"
+      ]
+    },
+    "neutral": {
+      "description": "현재 추세 유지",
+      "support_rate": 0.2,
+      "seats": 0,
+      "probability": 0.5,
+      "conditions": [
+        "현재 성장세 유지",
+        "안정적 당원 확보",
+        "지역 조직 강화"
+      ]
+    },
+    "pessimistic": {
+      "description": "성장 정체 + 경쟁 심화",
+      "support_rate": 0.1,
+      "seats": 0,
+      "probability": 0.3,
+      "conditions": [
+        "주요 정당 AI 정책 흡수",
+        "부정적 언론 보도",
+        "내부 갈등"
+      ]
+    }
+  },
+  "updated_at": "2026-02-03T16:15:49.782415"
+}

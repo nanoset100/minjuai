@@ -29,7 +29,7 @@ class PolicyResearchAgent:
 
     def __init__(self):
         self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-        self.model = "claude-sonnet-4-5-20250929"
+        self.model = "claude-haiku-4-5-20251001"
 
     # ─── 주간 사이클 ───
 

@@ -293,7 +293,7 @@ class AIPartyOrchestrator:
         logger.info("🔄 Batch 미완료, 동기 호출로 전환")
         try:
             response = self.client.messages.create(
-                model="claude-sonnet-4-5-20250929",  # Opus→Sonnet (전략 품질 유지, 비용 80% 절감)
+                model="claude-haiku-4-5-20251001",  # 비용 절감 위해 Haiku 통일
                 max_tokens=3000,
                 system="""당신은 AI 정당의 전략기획실장입니다.
 2028년 4월 선거에서 10석을 목표로 합니다.

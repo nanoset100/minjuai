@@ -191,7 +191,7 @@ JSON 형식으로 응답하세요:
         for attempt in range(1, max_retries + 1):
             try:
                 response = self.client.messages.create(
-                    model="claude-sonnet-4-5-20250929",
+                    model="claude-haiku-4-5-20251001",
                     max_tokens=1000,
                     system=system_prompts[platform],
                     messages=[
@@ -274,7 +274,7 @@ JSON 형식으로 응답하세요:
 
         try:
             response = self.client.messages.create(
-                model="claude-sonnet-4-5-20250929",
+                model="claude-haiku-4-5-20251001",
                 max_tokens=300,
                 system=f"""SNS 해시태그 전문가입니다.
 주어진 콘텐츠에 최적화된 한국어 해시태그를 생성하세요.

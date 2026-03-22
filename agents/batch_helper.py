@@ -37,7 +37,7 @@ class BatchHelper:
     # Sonnet: 입력 $1.50, 출력 $7.50
     # Opus:   입력 $7.50, 출력 $37.50
 
-    STRATEGY_MODEL = "claude-sonnet-4-5-20250929"  # 전략 보고서는 Sonnet 품질 유지
+    STRATEGY_MODEL = "claude-haiku-4-5-20251001"  # 비용 절감 위해 Haiku 통일
     BATCH_STATE_FILE = "batch_state.json"
 
     def __init__(self):

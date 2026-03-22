@@ -249,7 +249,7 @@ AI가 정치인을 대체하는 것이 아니라,
         
         try:
             response = self.client.messages.create(
-                model="claude-sonnet-4-5-20250929",
+                model="claude-haiku-4-5-20251001",
                 max_tokens=1000,
                 system=self._cached_system,  # Prompt Caching 적용 (캐시 히트 시 90% 절감)
                 messages=messages

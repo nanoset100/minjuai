@@ -1,0 +1,91 @@
+{
+  "date": "2026-02-03",
+  "target": 4,
+  "generated": 2,
+  "posts": [
+    {
+      "id": "twitter_20260203_150725_124",
+      "platform": "twitter",
+      "topic": "노동 환경 개선",
+      "content": "일하는 모든 시민이 존중받는 사회 💼\n\n장시간 노동이 아닌 생산성으로, 저임금이 아닌 공정한 보상으로. 민주AI는 AI 기술로 위험 작업을 대체하고, 근로자의 건강과 삶의 질을 최우선으로 하는 노동 환경을 만들어갑니다.\n\n함께 만드는 변화, 지금 시작합니다 ✨",
+      "hashtags": [
+        "#민주AI",
+        "#AI정치",
+        "#디지털민주주의",
+        "#노동존중",
+        "#공정한노동환경"
+      ],
+      "tone": "hopeful",
+      "target_audience": "20-50대 직장인, 자영업자, 청년 구직자 등 경제활동 인구 전반. 특히 열악한 근무 환경에서 일하거나 일과 삶의 균형을 중요시하는 시민층",
+      "image_suggestion": null,
+      "created_at": "2026-02-03T15:07:25.915134",
+      "status": "scheduled",
+      "performance": {
+        "likes": 0,
+        "shares": 0,
+        "comments": 0,
+        "impressions": 0
+      },
+      "scheduled_at": "2026-02-03T18:05:00.733039"
+    },
+    {
+      "id": "twitter_20260203_150752_648",
+      "platform": "twitter",
+      "topic": "디지털 민주주의",
+      "content": "2026년, 디지털 민주주의는 선택이 아닌 필수입니다. 🗳️ 시민 한 분 한 분의 목소리가 정책이 되고, 여러분의 클릭이 변화를 만듭니다. 민주AI와 함께 더 투명하고, 더 참여적인 정치를 만들어가세요. 당신의 의견이 곧 우리의 방향입니다. 💡",
+      "hashtags": [
+        "#민주AI",
+        "#AI정치",
+        "#디지털민주주의",
+        "#디지털민주주의",
+        "#시민참여정치"
+      ],
+      "tone": "hopeful",
+      "target_audience": "디지털 기술에 익숙한 2030세대와 정치 참여에 관심 있는 시민",
+      "image_suggestion": null,
+      "created_at": "2026-02-03T15:07:52.996098",
+      "status": "scheduled",
+      "performance": {
+        "likes": 0,
+        "shares": 0,
+        "comments": 0,
+        "impressions": 0
+      },
+      "scheduled_at": "2026-02-03T18:28:00.733039"
+    }
+  ],
+  "stats": {
+    "summary": {
+      "total_posts": 2,
+      "published": 0,
+      "scheduled": 2,
+      "drafts": 0,
+      "daily_target": 4,
+      "daily_completed": 2
+    },
+    "platforms": {
+      "twitter": {
+        "total_posts": 2,
+        "published": 0,
+        "total_likes": 0,
+        "total_shares": 0,
+        "total_comments": 0,
+        "total_impressions": 0,
+        "engagement_rate": 0.0
+      },
+      "instagram": {
+        "total_posts": 0,
+        "published": 0,
+        "total_likes": 0,
+        "total_shares": 0,
+        "total_comments": 0,
+        "total_impressions": 0,
+        "engagement_rate": 0.0
+      }
+    },
+    "tone_distribution": {
+      "hopeful": 2
+    },
+    "generated_at": "2026-02-03T15:08:14.748229"
+  }
+}
