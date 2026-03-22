@@ -15,7 +15,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from anthropic import Anthropic
+from openai import OpenAI
 from dotenv import load_dotenv
 from loguru import logger
 
@@ -37,11 +37,11 @@ class BatchHelper:
     # Sonnet: 입력 $1.50, 출력 $7.50
     # Opus:   입력 $7.50, 출력 $37.50
 
-    STRATEGY_MODEL = "claude-haiku-4-5-20251001"  # 비용 절감 위해 Haiku 통일
+    STRATEGY_MODEL = "gpt-4o-mini"  # 비용 절감 위해 Haiku 통일
     BATCH_STATE_FILE = "batch_state.json"
 
     def __init__(self):
-        self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.state_dir = Path(__file__).parent.parent / "data" / "monitoring"
         self.state_dir.mkdir(parents=True, exist_ok=True)
         self.state_file = self.state_dir / self.BATCH_STATE_FILE

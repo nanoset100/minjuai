@@ -42,7 +42,8 @@
       "Bash(powershell.exe -Command \"cd ''M:\\\\MyProject777\\\\minjuai_app''; flutter build apk --debug 2>&1 | Select-Object -Last 10\")",
       "Bash(powershell.exe -Command \"cd ''M:\\\\MyProject777\\\\test017AI_Party_claudecode''; git add main.py; git commit -m ''fix: solution engine fallback when API unavailable:*)",
       "Bash(powershell.exe -Command \"Invoke-RestMethod -Uri ''https://minjuai-production.up.railway.app/api/solution'' -Method Post -ContentType ''application/json'' -Body ''{\"\"question\"\": \"\"청년 주거 문제 해결책은?\"\"}'' -TimeoutSec 120 | ConvertTo-Json -Depth 5\")",
-      "Bash(powershell.exe -Command \"cd ''M:\\\\MyProject777\\\\test017AI_Party_claudecode''; git add -A; git commit -m ''perf: switch all agents to claude-haiku for cost reduction:*)"
+      "Bash(powershell.exe -Command \"cd ''M:\\\\MyProject777\\\\test017AI_Party_claudecode''; git add -A; git commit -m ''perf: switch all agents to claude-haiku for cost reduction:*)",
+      "Bash(powershell.exe -Command \"cd ''M:\\\\MyProject777\\\\test017AI_Party_claudecode''; git add -A; git commit -m ''feat: switch all agents from Anthropic to OpenAI GPT-4o mini:*)"
     ]
   }
 }

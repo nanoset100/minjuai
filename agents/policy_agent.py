@@ -12,7 +12,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any
 
-from anthropic import Anthropic
+from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent.parent / "config" / ".env")
@@ -111,11 +111,11 @@ class PolicyAgent:
         if not proposal:
             return {"error": "제안을 찾을 수 없습니다."}
 
-        api_key = os.getenv("ANTHROPIC_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            return {"error": "ANTHROPIC_API_KEY가 설정되지 않았습니다."}
+            return {"error": "OPENAI_API_KEY가 설정되지 않았습니다."}
 
-        client = Anthropic(api_key=api_key)
+        client = OpenAI(api_key=api_key)
 
         prompt = f"""다음 정책 제안을 분석해주세요:
 
@@ -135,13 +135,13 @@ class PolicyAgent:
 }}"""
 
         try:
-            message = client.messages.create(
-                model="claude-haiku-4-5-20251001",
+            message = client.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}],
             )
 
-            raw_text = message.content[0].text
+            raw_text = message.choices[0].message.content
             # ```json ... ``` 코드블록 제거
             cleaned = re.sub(r"```(?:json)?\s*", "", raw_text).strip()
             cleaned = cleaned.rstrip("`").strip()
@@ -164,11 +164,11 @@ class PolicyAgent:
 
     def analyze_proposal_data(self, title: str, description: str, category: str) -> Dict[str, Any]:
         """Supabase에서 호출용 — 제목/내용/카테고리로 직접 AI 분석"""
-        api_key = os.getenv("ANTHROPIC_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            return {"error": "ANTHROPIC_API_KEY가 설정되지 않았습니다."}
+            return {"error": "OPENAI_API_KEY가 설정되지 않았습니다."}
 
-        client = Anthropic(api_key=api_key)
+        client = OpenAI(api_key=api_key)
 
         prompt = f"""다음 정책 제안을 분석해주세요:
 
@@ -188,13 +188,13 @@ class PolicyAgent:
 }}"""
 
         try:
-            message = client.messages.create(
-                model="claude-haiku-4-5-20251001",
+            message = client.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=1024,
                 messages=[{"role": "user", "content": prompt}],
             )
 
-            raw_text = message.content[0].text
+            raw_text = message.choices[0].message.content
             cleaned = re.sub(r"```(?:json)?\s*", "", raw_text).strip()
             cleaned = cleaned.rstrip("`").strip()
             analysis = json.loads(cleaned)

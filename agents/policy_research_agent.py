@@ -2,6 +2,7 @@
 """
 정책 연구 에이전트 (PolicyResearchAgent)
 매주 1개 분야를 자동 연구하고 글로벌 비교 분석 후 정책안을 생성한다.
+- GPT-4o mini 사용 (비용 최적화)
 
 주간 사이클:
   월: 분야 선정 + 한국 현황 조사
@@ -13,11 +14,12 @@
 
 import os
 import sys
-from datetime import datetime, timedelta
-from typing import Dict, Any, List, Optional
+import json
+from datetime import datetime
+from typing import Dict, Any
 from pathlib import Path
 
-from anthropic import Anthropic
+from openai import OpenAI
 from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -28,8 +30,20 @@ class PolicyResearchAgent:
     """주간 정책 자동 연구 에이전트"""
 
     def __init__(self):
-        self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-        self.model = "claude-haiku-4-5-20251001"
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.model = "gpt-4o-mini"
+
+    def _ai_call(self, system: str, prompt: str, max_tokens: int = 3000) -> str:
+        """공통 AI 호출 함수"""
+        response = self.client.chat.completions.create(
+            model=self.model,
+            max_tokens=max_tokens,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": prompt},
+            ],
+        )
+        return response.choices[0].message.content
 
     # ─── 주간 사이클 ───
 
@@ -40,7 +54,6 @@ class PolicyResearchAgent:
         if week_number > 52:
             week_number = 52
 
-        # DB에서 해당 주차 분야 조회
         result = db.table("policy_topics").select("*").eq("week_number", week_number).execute()
         if result.data:
             return result.data[0]
@@ -52,12 +65,10 @@ class PolicyResearchAgent:
         year = now.year
         week_number = topic["week_number"]
 
-        # 기존 연구 조회
         result = db.table("weekly_research").select("*").eq("year", year).eq("week_number", week_number).execute()
         if result.data:
             return result.data[0]
 
-        # 새 연구 생성
         cycle = year - 2026 + 1
         result = db.table("weekly_research").insert({
             "topic_id": topic["id"],
@@ -71,9 +82,7 @@ class PolicyResearchAgent:
 
     def research_korea_status(self, db, research_id: str, topic_name: str) -> Dict[str, Any]:
         """한국 현황 조사 (AI 분석)"""
-        response = self.client.messages.create(
-            model=self.model,
-            max_tokens=3000,
+        text = self._ai_call(
             system="""당신은 한국 정책 연구 전문가입니다.
 주어진 분야에 대한 한국의 현재 상황을 객관적 데이터와 함께 분석하세요.
 
@@ -91,14 +100,9 @@ class PolicyResearchAgent:
   ],
   "public_opinion": "국민 여론 요약"
 }""",
-            messages=[{
-                "role": "user",
-                "content": f"분야: {topic_name}\n현재 날짜: {datetime.now().strftime('%Y년 %m월 %d일')}\n\n한국의 현재 상황을 분석해주세요."
-            }]
+            prompt=f"분야: {topic_name}\n현재 날짜: {datetime.now().strftime('%Y년 %m월 %d일')}\n\n한국의 현재 상황을 분석해주세요.",
         )
 
-        import json
-        text = response.content[0].text
         # JSON 블록 추출
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
@@ -110,7 +114,6 @@ class PolicyResearchAgent:
         except json.JSONDecodeError:
             korea_data = {"summary": text, "key_stats": [], "main_issues": [], "current_policies": []}
 
-        # DB 업데이트
         db.table("weekly_research").update({
             "korea_status": korea_data,
             "phase": "tue_wed_global",
@@ -122,9 +125,7 @@ class PolicyResearchAgent:
         """글로벌 6개국 비교 연구"""
         korea_summary = korea_status.get("summary", "")
 
-        response = self.client.messages.create(
-            model=self.model,
-            max_tokens=4000,
+        text = self._ai_call(
             system="""당신은 글로벌 정책 비교 분석 전문가입니다.
 주어진 분야에 대해 전세계 6개국 이상의 정책을 비교 분석하세요.
 반드시 성공 사례와 실패 사례를 모두 포함하세요.
@@ -148,20 +149,16 @@ class PolicyResearchAgent:
   "best_practice": "한국에 가장 적합한 모델 추천",
   "recommended_combination": "최적 조합 (여러 국가 장점 결합)"
 }""",
-            messages=[{
-                "role": "user",
-                "content": f"""분야: {topic_name}
+            prompt=f"""분야: {topic_name}
 
 한국 현황 요약:
 {korea_summary}
 
 이 분야에서 전세계 6개국 이상의 정책 사례를 비교 분석해주세요.
-성공 사례와 실패 사례를 모두 포함하고, 한국에 적용 가능한 최적 모델을 추천해주세요."""
-            }]
+성공 사례와 실패 사례를 모두 포함하고, 한국에 적용 가능한 최적 모델을 추천해주세요.""",
+            max_tokens=4000,
         )
 
-        import json
-        text = response.content[0].text
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:
@@ -172,7 +169,6 @@ class PolicyResearchAgent:
         except json.JSONDecodeError:
             global_data = {"countries_analyzed": 0, "cases": [], "best_practice": text}
 
-        # DB 업데이트
         db.table("weekly_research").update({
             "global_comparison": global_data,
             "phase": "thu_draft",
@@ -195,16 +191,14 @@ class PolicyResearchAgent:
                     "applicability_to_korea": case.get("lessons", ""),
                 }).execute()
             except Exception:
-                pass  # 중복 무시
+                pass
 
         return global_data
 
     def generate_policy_draft(self, db, research_id: str, topic_name: str,
                               korea_status: Dict, global_comparison: Dict) -> Dict[str, Any]:
         """정책안 초안 AI 자동 생성"""
-        response = self.client.messages.create(
-            model=self.model,
-            max_tokens=4000,
+        text = self._ai_call(
             system="""당신은 AI 정당의 수석 정책 연구원입니다.
 한국 현황과 글로벌 비교 분석을 바탕으로 구체적이고 실현 가능한 정책안을 작성하세요.
 
@@ -230,9 +224,7 @@ class PolicyResearchAgent:
     {"step": 1, "action": "행동", "timeline": "기간"}
   ]
 }""",
-            messages=[{
-                "role": "user",
-                "content": f"""분야: {topic_name}
+            prompt=f"""분야: {topic_name}
 
 한국 현황:
 {korea_status.get('summary', '')}
@@ -246,12 +238,10 @@ class PolicyResearchAgent:
 해외 성공 사례:
 {', '.join([f"{c.get('country', '')}: {c.get('policy_name', '')}" for c in global_comparison.get('cases', []) if c.get('outcome') == 'success'])}
 
-위 분석을 바탕으로 한국에 맞는 구체적 정책안을 작성해주세요."""
-            }]
+위 분석을 바탕으로 한국에 맞는 구체적 정책안을 작성해주세요.""",
+            max_tokens=4000,
         )
 
-        import json
-        text = response.content[0].text
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:
@@ -286,7 +276,6 @@ class PolicyResearchAgent:
         draft_text += f"\n## 총 예산: {draft.get('total_budget', '미정')}\n"
         draft_text += f"## 실현가능성: {draft.get('feasibility_score', 50)}%\n"
 
-        # DB 업데이트
         db.table("weekly_research").update({
             "policy_draft": draft_text,
             "feasibility_score": draft.get("feasibility_score", 50),
@@ -299,28 +288,19 @@ class PolicyResearchAgent:
         return draft
 
     def run_full_cycle(self, db) -> Dict[str, Any]:
-        """전체 주간 연구 사이클 실행 (테스트/수동 실행용)"""
-        # 1. 이번 주 분야
+        """전체 주간 연구 사이클 실행"""
         topic = self.get_current_week_topic(db)
         topic_name = topic["name"]
 
-        # 2. 연구 생성
         research = self.get_or_create_research(db, topic)
         research_id = research["id"]
 
-        # 3. 한국 현황 조사
         korea = self.research_korea_status(db, research_id, topic_name)
-
-        # 4. 글로벌 비교
         global_comp = self.research_global_comparison(db, research_id, topic_name, korea)
-
-        # 5. 정책안 생성
         draft = self.generate_policy_draft(db, research_id, topic_name, korea, global_comp)
 
-        # 6. 온톨로지 노드 생성
         self._create_ontology_nodes(db, research_id, topic_name, korea, global_comp, draft)
 
-        # 7. 활동 로그
         db.table("agent_activities").insert({
             "agent_id": "policy_research",
             "action": f"주간 정책 연구: {topic_name}",
@@ -342,10 +322,9 @@ class PolicyResearchAgent:
 
     def _create_ontology_nodes(self, db, research_id, topic_name, korea, global_comp, draft):
         """연구 결과를 온톨로지 노드/엣지로 변환"""
-        # 이슈 노드 생성
         for issue in korea.get("main_issues", []):
             try:
-                node_result = db.table("ontology_nodes").insert({
+                db.table("ontology_nodes").insert({
                     "type": "issue",
                     "name": issue.get("issue", ""),
                     "description": issue.get("detail", ""),
@@ -356,9 +335,8 @@ class PolicyResearchAgent:
             except Exception:
                 pass
 
-        # 정책 노드 생성
         try:
-            policy_node = db.table("ontology_nodes").insert({
+            db.table("ontology_nodes").insert({
                 "type": "policy",
                 "name": draft.get("title", topic_name),
                 "description": draft.get("summary", ""),
@@ -372,7 +350,6 @@ class PolicyResearchAgent:
         except Exception:
             pass
 
-        # 글로벌 사례 노드
         for case in global_comp.get("cases", []):
             try:
                 db.table("ontology_nodes").insert({
@@ -390,7 +367,6 @@ class PolicyResearchAgent:
 
     def solve_policy_question(self, db, question: str) -> Dict[str, Any]:
         """시민 질문에 대해 온톨로지 기반 솔루션 도출"""
-        # 1. 기존 연구 검색 (DB에서)
         all_research = db.table("weekly_research").select(
             "*, policy_topics(name, category_group)"
         ).eq("status", "draft").execute()
@@ -401,17 +377,13 @@ class PolicyResearchAgent:
             if topic:
                 existing_policies.append(f"- {topic.get('name', '')}: {r.get('expected_effect', '')[:100]}")
 
-        # 2. 글로벌 사례 검색
         global_result = db.table("global_cases").select("country, policy_name, policy_area, outcome, lessons_learned").limit(20).execute()
         global_context = "\n".join([
             f"- {g['country']} '{g['policy_name']}' ({g['policy_area']}): {g.get('outcome', '')} - {(g.get('lessons_learned') or '')[:80]}"
             for g in (global_result.data or [])
         ])
 
-        # 3. AI 솔루션 생성
-        response = self.client.messages.create(
-            model=self.model,
-            max_tokens=3000,
+        solution_text = self._ai_call(
             system="""당신은 AI 정당의 정책 솔루션 엔진입니다.
 시민의 질문에 대해 근거 기반 해법을 제시하세요.
 
@@ -423,9 +395,7 @@ class PolicyResearchAgent:
 5. 예산 추정
 
 관련 기존 정책이 있으면 연결해서 시너지를 설명하세요.""",
-            messages=[{
-                "role": "user",
-                "content": f"""시민 질문: {question}
+            prompt=f"""시민 질문: {question}
 
 기존 연구된 정책:
 {chr(10).join(existing_policies[:10]) if existing_policies else '아직 없음'}
@@ -433,13 +403,9 @@ class PolicyResearchAgent:
 글로벌 사례 DB:
 {global_context if global_context else '아직 없음'}
 
-이 질문에 대한 근거 기반 솔루션을 제시해주세요."""
-            }]
+이 질문에 대한 근거 기반 솔루션을 제시해주세요.""",
         )
 
-        solution_text = response.content[0].text
-
-        # 활동 로그
         try:
             db.table("agent_activities").insert({
                 "agent_id": "solution_engine",

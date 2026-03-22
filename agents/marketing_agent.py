@@ -12,7 +12,7 @@ from typing import Dict, List, Any, Optional
 from pathlib import Path
 import os
 
-from anthropic import Anthropic
+from openai import OpenAI
 from dotenv import load_dotenv
 from loguru import logger
 
@@ -69,7 +69,7 @@ class MarketingAgent:
 
     def __init__(self):
         """초기화: Claude API 연결 및 데이터 디렉토리 설정"""
-        self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.party_name = os.getenv("PARTY_NAME", "민주AI")
 
         # 데이터 디렉토리
@@ -190,19 +190,16 @@ JSON 형식으로 응답하세요:
         last_error = None
         for attempt in range(1, max_retries + 1):
             try:
-                response = self.client.messages.create(
-                    model="claude-haiku-4-5-20251001",
+                response = self.client.chat.completions.create(
+                    model="gpt-4o-mini",
                     max_tokens=1000,
-                    system=system_prompts[platform],
                     messages=[
-                        {
-                            "role": "user",
-                            "content": f"주제: {topic}\n\n날짜: {datetime.now().strftime('%Y년 %m월 %d일')}\n\n위 주제로 포스트를 작성해주세요.",
-                        }
+                        {"role": "system", "content": system_prompts[platform]},
+                        {"role": "user", "content": f"주제: {topic}\n\n날짜: {datetime.now().strftime('%Y년 %m월 %d일')}\n\n위 주제로 포스트를 작성해주세요."},
                     ],
                 )
 
-                raw_text = response.content[0].text
+                raw_text = response.choices[0].message.content
 
                 # JSON 파싱
                 post_data = self._parse_json_response(raw_text)
@@ -273,26 +270,23 @@ JSON 형식으로 응답하세요:
         base_tags = [f"#{self.party_name}", "#AI정치", "#디지털민주주의"]
 
         try:
-            response = self.client.messages.create(
-                model="claude-haiku-4-5-20251001",
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=300,
-                system=f"""SNS 해시태그 전문가입니다.
+                messages=[
+                    {"role": "system", "content": f"""SNS 해시태그 전문가입니다.
 주어진 콘텐츠에 최적화된 한국어 해시태그를 생성하세요.
 
 규칙:
 - 최대 {max_tags - len(base_tags)}개 추가 해시태그
 - 트렌딩 가능성이 높은 태그 우선
 - 정치/사회 관련 태그
-- JSON 배열 형식으로만 응답: ["#태그1", "#태그2", ...]""",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"콘텐츠: {content[:200]}",
-                    }
+- JSON 배열 형식으로만 응답: ["#태그1", "#태그2", ...]"""},
+                    {"role": "user", "content": f"콘텐츠: {content[:200]}"},
                 ],
             )
 
-            raw = response.content[0].text
+            raw = response.choices[0].message.content
             extra_tags = self._parse_json_response(raw)
             if isinstance(extra_tags, list):
                 # # 접두사 확인 및 추가

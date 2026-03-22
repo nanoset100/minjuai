@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 import json
 
-from anthropic import Anthropic
+from openai import OpenAI
 from dotenv import load_dotenv
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from loguru import logger
@@ -37,7 +37,7 @@ class AIPartyOrchestrator:
     """
     
     def __init__(self):
-        self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.scheduler = AsyncIOScheduler()
         self.auto_approval_threshold = float(os.getenv("AUTO_APPROVAL_THRESHOLD", 0.85))
         
@@ -219,11 +219,12 @@ class AIPartyOrchestrator:
         logger.info("📋 일일 브리핑 생성 시작")
         
         try:
-            # Claude에게 브리핑 요청
-            response = self.client.messages.create(
-                model="claude-haiku-4-5-20251001",  # Opus→Haiku (비용 95% 절감)
+            # GPT-4o mini로 브리핑 요청
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=2000,
-                system="""당신은 AI 정당의 사무총장입니다.
+                messages=[
+                    {"role": "system", "content": """당신은 AI 정당의 사무총장입니다.
 대표에게 드릴 간결하고 명확한 일일 브리핑을 작성하세요.
 
 형식:
@@ -232,10 +233,8 @@ class AIPartyOrchestrator:
 3. 결정이 필요한 사항 (있으면)
 4. 시스템 상태
 
-5분 안에 읽을 수 있게 간결하게 작성하세요.""",
-                messages=[{
-                    "role": "user",
-                    "content": f"""
+5분 안에 읽을 수 있게 간결하게 작성하세요."""},
+                    {"role": "user", "content": f"""
 현재 날짜: {datetime.now().strftime('%Y년 %m월 %d일 %A')}
 
 시스템 상태:
@@ -243,11 +242,11 @@ class AIPartyOrchestrator:
 - 상태: 정상 가동 중
 
 일일 브리핑을 작성해주세요.
-"""
-                }]
+"""}
+                ]
             )
-            
-            briefing = response.content[0].text
+
+            briefing = response.choices[0].message.content
             
             # 브리핑 저장
             briefing_file = self.output_dir / f"briefing_{datetime.now().strftime('%Y%m%d')}.md"
@@ -292,10 +291,11 @@ class AIPartyOrchestrator:
         # 2단계: Fallback - 동기 호출
         logger.info("🔄 Batch 미완료, 동기 호출로 전환")
         try:
-            response = self.client.messages.create(
-                model="claude-haiku-4-5-20251001",  # 비용 절감 위해 Haiku 통일
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
                 max_tokens=3000,
-                system="""당신은 AI 정당의 전략기획실장입니다.
+                messages=[
+                    {"role": "system", "content": """당신은 AI 정당의 전략기획실장입니다.
 2028년 4월 선거에서 10석을 목표로 합니다.
 
 주간 전략 회의 보고서를 작성하세요:
@@ -303,19 +303,17 @@ class AIPartyOrchestrator:
 2. 다음 주 주요 전략
 3. 리스크 요인
 4. 기회 요인
-5. 대표의 결정이 필요한 사항""",
-                messages=[{
-                    "role": "user",
-                    "content": f"""
+5. 대표의 결정이 필요한 사항"""},
+                    {"role": "user", "content": f"""
 현재: {datetime.now().strftime('%Y년 %m월 %d일')}
 선거일까지: {(datetime(2028, 4, 10) - datetime.now()).days}일
 
 주간 전략 보고서를 작성해주세요.
-"""
-                }]
+"""}
+                ]
             )
 
-            strategy = response.content[0].text
+            strategy = response.choices[0].message.content
 
             # 전략 보고서 저장
             strategy_file = self.output_dir / f"strategy_week_{datetime.now().strftime('%Y%m%d')}.md"
