@@ -256,7 +256,13 @@ class VoteRequest(BaseModel):
 # ============== 루트 ==============
 
 @app.get("/")
-async def root():
+async def landing_page():
+    """메인 랜딩 페이지 (한영 2개국어)"""
+    return FileResponse(Path(__file__).parent / "landing.html")
+
+
+@app.get("/api")
+async def api_root():
     return {
         "message": "AI 정당 API에 오신 것을 환영합니다!",
         "version": "0.2.0",

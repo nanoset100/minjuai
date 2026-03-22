@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MinjuAI - World's First AI-Operated Political Party App. 7 AI agents running 24/7 for transparent, data-driven democracy.">
+    <meta name="keywords" content="AI political party, MinjuAI, digital democracy, AI governance, 민주AI, AI 정당">
+    <meta property="og:title" content="MinjuAI - World's First AI Political Party">
+    <meta property="og:description" content="7 AI agents running 24/7. Evidence-based policy. Citizen participation. Transparent governance.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://minjuai-production.up.railway.app">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#667eea">
+    <title>MinjuAI - World's First AI Political Party</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --accent: #ED8936;
+            --accent-dark: #DD6B20;
+            --bg: #0F0F1A;
+            --bg-card: #1A1A2E;
+            --bg-card-hover: #232340;
+            --text: #E2E8F0;
+            --text-muted: #A0AEC0;
+            --text-bright: #FFFFFF;
+            --success: #48BB78;
+            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-2: linear-gradient(135deg, #ED8936 0%, #DD6B20 100%);
+            --gradient-hero: linear-gradient(180deg, #0F0F1A 0%, #1A1A3E 50%, #0F0F1A 100%);
+            --shadow: 0 20px 60px rgba(0,0,0,0.3);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', 'Noto Sans KR', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ─── NAV ─── */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 16px 0;
+            transition: all 0.3s;
+        }
+        nav.scrolled {
+            background: rgba(15,15,26,0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(102,126,234,0.15);
+            padding: 10px 0;
+        }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            list-style: none;
+        }
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text-bright); }
+
+        .lang-toggle {
+            display: flex;
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 3px;
+            cursor: pointer;
+        }
+        .lang-btn {
+            padding: 5px 14px;
+            border-radius: 17px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: transparent;
+            color: var(--text-muted);
+        }
+        .lang-btn.active {
+            background: var(--gradient-1);
+            color: white;
+        }
+
+        /* ─── HERO ─── */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 120px 24px 80px;
+            background: var(--gradient-hero);
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(102,126,234,0.15) 0%, transparent 70%);
+            top: -100px;
+            right: -100px;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(237,137,54,0.1) 0%, transparent 70%);
+            bottom: -50px;
+            left: -50px;
+        }
+        .hero-inner {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(102,126,234,0.15);
+            border: 1px solid rgba(102,126,234,0.3);
+            border-radius: 30px;
+            padding: 6px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 24px;
+        }
+        .hero-badge .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .hero h1 {
+            font-size: clamp(36px, 5vw, 64px);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            color: var(--text-bright);
+            letter-spacing: -1px;
+        }
+        .hero h1 .highlight {
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+            line-height: 1.8;
+            max-width: 500px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--gradient-1);
+            color: white;
+            box-shadow: 0 8px 30px rgba(102,126,234,0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(102,126,234,0.5);
+        }
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1.5px solid rgba(255,255,255,0.2);
+        }
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Phone Mockup */
+        .phone-mockup {
+            display: flex;
+            justify-content: center;
+            position: relative;
+        }
+        .phone-frame {
+            width: 280px;
+            height: 560px;
+            background: #1a1a2e;
+            border-radius: 36px;
+            border: 3px solid rgba(255,255,255,0.1);
+            padding: 12px;
+            box-shadow: var(--shadow), 0 0 100px rgba(102,126,234,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #667eea 0%, #5a67d8 30%, #1a1a3e 100%);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .phone-screen .app-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+        }
+        .phone-screen .app-sub {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 30px;
+        }
+        .phone-agent {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 10px 16px;
+            width: 100%;
+            margin-bottom: 8px;
+            animation: slideIn 0.5s ease-out both;
+        }
+        .phone-agent:nth-child(3) { animation-delay: 0.1s; }
+        .phone-agent:nth-child(4) { animation-delay: 0.2s; }
+        .phone-agent:nth-child(5) { animation-delay: 0.3s; }
+        .phone-agent:nth-child(6) { animation-delay: 0.4s; }
+        .phone-agent:nth-child(7) { animation-delay: 0.5s; }
+        .phone-agent:nth-child(8) { animation-delay: 0.6s; }
+        .phone-agent:nth-child(9) { animation-delay: 0.7s; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .agent-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .agent-info { flex: 1; }
+        .agent-name { font-size: 11px; font-weight: 600; color: white; }
+        .agent-status { font-size: 9px; color: rgba(255,255,255,0.6); }
+        .agent-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        /* ─── STATS COUNTER ─── */
+        .stats-bar {
+            padding: 60px 24px;
+            background: rgba(26,26,46,0.5);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .stats-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            text-align: center;
+        }
+        .stat-item .stat-number {
+            font-size: 42px;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.2;
+        }
+        .stat-item .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ─── SECTION COMMON ─── */
+        section {
+            padding: 100px 24px;
+        }
+        .section-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-tag {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 800;
+            color: var(--text-bright);
+            margin-bottom: 16px;
+            letter-spacing: -0.5px;
+        }
+        .section-desc {
+            font-size: 17px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin-bottom: 50px;
+            line-height: 1.8;
+        }
+
+        /* ─── FEATURES ─── */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius);
+            padding: 32px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(102,126,234,0.3);
+            transform: translateY(-4px);
+        }
+        .feature-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 10px;
+        }
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* ─── AGENTS ─── */
+        .agents-section {
+            background: linear-gradient(180deg, var(--bg) 0%, #1A1A3E 50%, var(--bg) 100%);
+        }
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+        }
+        .agent-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: var(--radius-sm);
+            padding: 24px 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .agent-card:hover {
+            background: rgba(102,126,234,0.1);
+            border-color: rgba(102,126,234,0.3);
+            transform: translateY(-3px);
+        }
+        .agent-card .emoji {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+        .agent-card h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 6px;
+        }
+        .agent-card p {
+            font-size: 11px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+        .agent-card .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            color: var(--success);
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        .agent-card .live-badge .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        /* ─── HOW IT WORKS ─── */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            position: relative;
+        }
+        .steps-grid::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 60px;
+            right: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            opacity: 0.3;
+        }
+        .step-item {
+            text-align: center;
+            position: relative;
+        }
+        .step-number {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--gradient-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+            margin: 0 auto 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .step-item h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 8px;
+        }
+        .step-item p {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ─── SOLUTION ENGINE ─── */
+        .solution-demo {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: var(--radius);
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .solution-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .solution-header .icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--gradient-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        .solution-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-bright);
+        }
+        .solution-header p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .solution-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .flow-step {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        .flow-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .flow-content h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-bright);
+            margin-bottom: 4px;
+        }
+        .flow-content p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .flow-arrow {
+            text-align: center;
+            color: var(--primary);
+            font-size: 18px;
+            padding-left: 12px;
+        }
+
+        /* ─── VISION TIMELINE ─── */
+        .vision-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+        .vision-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius);
+            padding: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .vision-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+        .vision-card:nth-child(1)::before { background: var(--gradient-1); }
+        .vision-card:nth-child(2)::before { background: var(--gradient-2); }
+        .vision-card:nth-child(3)::before { background: linear-gradient(90deg, var(--success), #38B2AC); }
+        .vision-year {
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--primary);
+            opacity: 0.3;
+            margin-bottom: 12px;
+        }
+        .vision-card h4 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-bright);
+            margin-bottom: 10px;
+        }
+        .vision-card p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* ─── CTA ─── */
+        .cta-section {
+            text-align: center;
+            padding: 100px 24px;
+            background: linear-gradient(180deg, var(--bg) 0%, #1A1A3E 100%);
+        }
+        .cta-section h2 {
+            font-size: clamp(28px, 4vw, 48px);
+            font-weight: 900;
+            color: var(--text-bright);
+            margin-bottom: 16px;
+        }
+        .cta-section p {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .btn-cta {
+            padding: 18px 40px;
+            font-size: 17px;
+            border-radius: 14px;
+        }
+
+        /* ─── FOOTER ─── */
+        footer {
+            padding: 40px 24px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        footer p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 900px) {
+            .hero-inner { grid-template-columns: 1fr; text-align: center; gap: 40px; }
+            .hero p { margin: 0 auto 36px; }
+            .hero-buttons { justify-content: center; }
+            .features-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .steps-grid { grid-template-columns: repeat(2, 1fr); }
+            .steps-grid::before { display: none; }
+            .vision-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .phone-frame { width: 240px; height: 480px; }
+            .agents-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+            .steps-grid { grid-template-columns: 1fr; }
+            .agents-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* ─── ANIMATIONS ─── */
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.7s ease-out;
+        }
+        .fade-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Float animation for phone */
+        .phone-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav id="navbar">
+    <div class="nav-inner">
+        <div class="logo">MinjuAI</div>
+        <ul class="nav-links">
+            <li><a href="#features" data-ko="핵심 기능" data-en="Features">핵심 기능</a></li>
+            <li><a href="#agents" data-ko="AI 에이전트" data-en="AI Agents">AI 에이전트</a></li>
+            <li><a href="#solution" data-ko="솔루션 엔진" data-en="Solution Engine">솔루션 엔진</a></li>
+            <li><a href="#vision" data-ko="비전" data-en="Vision">비전</a></li>
+        </ul>
+        <div class="lang-toggle">
+            <button class="lang-btn active" onclick="setLang('ko')">KR</button>
+            <button class="lang-btn" onclick="setLang('en')">EN</button>
+        </div>
+    </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-text">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                <span data-ko="7개 AI 에이전트 24/7 가동 중" data-en="7 AI Agents Running 24/7">7개 AI 에이전트 24/7 가동 중</span>
+            </div>
+            <h1>
+                <span data-ko="세계 최초" data-en="World's First">세계 최초</span><br>
+                <span class="highlight" data-ko="AI 정당 앱" data-en="AI Political Party">AI 정당 앱</span>
+            </h1>
+            <p data-ko="시민이 질문하면 AI가 글로벌 데이터를 분석하고 근거 기반 정책을 만듭니다. 7개 AI 에이전트가 24시간 쉬지 않고 투명한 민주주의를 운영합니다."
+               data-en="Citizens ask, AI analyzes global data and creates evidence-based policies. 7 AI agents operate transparent democracy around the clock, never sleeping.">
+                시민이 질문하면 AI가 글로벌 데이터를 분석하고 근거 기반 정책을 만듭니다. 7개 AI 에이전트가 24시간 쉬지 않고 투명한 민주주의를 운영합니다.
+            </p>
+            <div class="hero-buttons">
+                <a href="#download" class="btn btn-primary" data-ko="📱 앱 다운로드" data-en="📱 Download App">📱 앱 다운로드</a>
+                <a href="#solution" class="btn btn-outline" data-ko="솔루션 엔진 체험 →" data-en="Try Solution Engine →">솔루션 엔진 체험 →</a>
+            </div>
+        </div>
+        <div class="phone-mockup">
+            <div class="phone-frame phone-float">
+                <div class="phone-screen">
+                    <div class="app-title">민주AI</div>
+                    <div class="app-sub" data-ko="AI가 운영하는 투명한 정당" data-en="AI-Operated Transparent Party">AI가 운영하는 투명한 정당</div>
+                    <div class="phone-agent">
+                        <div class="agent-icon" style="background:rgba(102,126,234,0.3)">🎯</div>
+                        <div class="agent-info">
+                            <div class="agent-name" data-ko="오케스트레이터" data-en="Orchestrator">오케스트레이터</div>
+                            <div class="agent-status" data-ko="전체 시스템 조율 중" data-en="Coordinating all agents">전체 시스템 조율 중</div>
+                        </div>
+                        <div class="agent-dot"></div>
+                    </div>
+                    <div class="phone-agent">
+                        <div class="agent-icon" style="background:rgba(72,187,120,0.3)">📊</div>
+                        <div class="agent-info">
+                            <div class="agent-name" data-ko="정책 연구팀" data-en="Policy Research">정책 연구팀</div>
+                            <div class="agent-status" data-ko="주간 연구 진행 중" data-en="Weekly research active">주간 연구 진행 중</div>
+                        </div>
+                        <div class="agent-dot"></div>
+                    </div>
+                    <div class="phone-agent">
+                        <div class="agent-icon" style="background:rgba(237,137,54,0.3)">💬</div>
+                        <div class="agent-info">
+                            <div class="agent-name" data-ko="시민 상담" data-en="Citizen Support">시민 상담</div>
+                            <div class="agent-status" data-ko="24/7 응답 대기" data-en="24/7 ready">24/7 응답 대기</div>
+                        </div>
+                        <div class="agent-dot"></div>
+                    </div>
+                    <div class="phone-agent">
+                        <div class="agent-icon" style="background:rgba(99,179,237,0.3)">📱</div>
+                        <div class="agent-info">
+                            <div class="agent-name" data-ko="SNS 마케팅" data-en="SNS Marketing">SNS 마케팅</div>
+                            <div class="agent-status" data-ko="콘텐츠 자동 생성" data-en="Auto-generating content">콘텐츠 자동 생성</div>
+                        </div>
+                        <div class="agent-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── LIVE STATS ─── -->
+<div class="stats-bar">
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-number" id="stat-agents">7</div>
+            <div class="stat-label" data-ko="AI 에이전트" data-en="AI Agents">AI 에이전트</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="stat-topics">52</div>
+            <div class="stat-label" data-ko="주간 정책 분야" data-en="Weekly Policy Topics">주간 정책 분야</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="stat-countries">6+</div>
+            <div class="stat-label" data-ko="글로벌 비교 국가" data-en="Countries Compared">글로벌 비교 국가</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label" data-ko="무중단 운영" data-en="Non-stop Operation">무중단 운영</div>
+        </div>
+    </div>
+</div>
+
+<!-- ─── FEATURES ─── -->
+<section id="features">
+    <div class="section-inner">
+        <div class="section-tag" data-ko="핵심 기능" data-en="CORE FEATURES">핵심 기능</div>
+        <h2 class="section-title" data-ko="정치를 다시 설계합니다" data-en="Redesigning Politics">정치를 다시 설계합니다</h2>
+        <p class="section-desc" data-ko="AI가 데이터를 분석하고, 시민이 결정합니다. 완전한 투명성, 근거 기반 정책, 실시간 참여를 실현합니다."
+           data-en="AI analyzes data, citizens decide. We deliver complete transparency, evidence-based policy, and real-time participation.">
+            AI가 데이터를 분석하고, 시민이 결정합니다. 완전한 투명성, 근거 기반 정책, 실시간 참여를 실현합니다.
+        </p>
+        <div class="features-grid">
+            <div class="feature-card fade-up">
+                <div class="feature-icon" style="background: rgba(102,126,234,0.15);">🔬</div>
+                <h3 data-ko="주간 정책 연구" data-en="Weekly Policy Research">주간 정책 연구</h3>
+                <p data-ko="매주 1개 분야를 자동 연구합니다. 한국 현황 조사 → 글로벌 6개국 비교 → AI 정책안 생성 → 시민 투표로 확정."
+                   data-en="Auto-research one policy area weekly. Korea status survey → 6-country comparison → AI draft policy → Citizen vote to finalize.">
+                    매주 1개 분야를 자동 연구합니다. 한국 현황 조사 → 글로벌 6개국 비교 → AI 정책안 생성 → 시민 투표로 확정.
+                </p>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon" style="background: rgba(237,137,54,0.15);">💡</div>
+                <h3 data-ko="솔루션 엔진" data-en="Solution Engine">솔루션 엔진</h3>
+                <p data-ko="시민이 정책 질문을 하면, AI가 글로벌 데이터를 분석하여 근거 기반 해법을 실시간으로 제시합니다."
+                   data-en="Citizens ask policy questions, AI analyzes global data and presents evidence-based solutions in real-time.">
+                    시민이 정책 질문을 하면, AI가 글로벌 데이터를 분석하여 근거 기반 해법을 실시간으로 제시합니다.
+                </p>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon" style="background: rgba(72,187,120,0.15);">🗳️</div>
+                <h3 data-ko="시민 참여 민주주의" data-en="Participatory Democracy">시민 참여 민주주의</h3>
+                <p data-ko="정책 제안, 찬반 투표, 의견 제출을 앱에서 직접 할 수 있습니다. AI는 보조하고 시민이 결정합니다."
+                   data-en="Propose policies, vote for/against, submit opinions directly in-app. AI assists, citizens decide.">
+                    정책 제안, 찬반 투표, 의견 제출을 앱에서 직접 할 수 있습니다. AI는 보조하고 시민이 결정합니다.
+                </p>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon" style="background: rgba(99,179,237,0.15);">🌐</div>
+                <h3 data-ko="정책 온톨로지" data-en="Policy Ontology">정책 온톨로지</h3>
+                <p data-ko="52개 정책 분야의 지식 그래프. 한국 이슈, 글로벌 사례, AI 정책안이 모두 연결된 지식 체계입니다."
+                   data-en="Knowledge graph of 52 policy areas. Korean issues, global cases, and AI policy proposals all interconnected.">
+                    52개 정책 분야의 지식 그래프. 한국 이슈, 글로벌 사례, AI 정책안이 모두 연결된 지식 체계입니다.
+                </p>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon" style="background: rgba(237,100,166,0.15);">🔍</div>
+                <h3 data-ko="의정 활동 감시" data-en="Legislative Monitoring">의정 활동 감시</h3>
+                <p data-ko="국회의원의 출석, 발언, 법안 발의를 AI가 자동으로 추적하고 시민에게 리포트합니다."
+                   data-en="AI automatically tracks lawmakers' attendance, speeches, and bills, reporting to citizens.">
+                    국회의원의 출석, 발언, 법안 발의를 AI가 자동으로 추적하고 시민에게 리포트합니다.
+                </p>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon" style="background: rgba(159,122,234,0.15);">📊</div>
+                <h3 data-ko="완전한 투명성" data-en="Full Transparency">완전한 투명성</h3>
+                <p data-ko="모든 의사결정 과정, AI 분석 근거, 비용 내역이 실시간으로 공개됩니다. 숨기는 것은 없습니다."
+                   data-en="Every decision process, AI analysis rationale, and cost breakdown is disclosed in real-time. Nothing is hidden.">
+                    모든 의사결정 과정, AI 분석 근거, 비용 내역이 실시간으로 공개됩니다. 숨기는 것은 없습니다.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── AI AGENTS ─── -->
+<section id="agents" class="agents-section">
+    <div class="section-inner">
+        <div class="section-tag" data-ko="AI 에이전트" data-en="AI AGENTS">AI 에이전트</div>
+        <h2 class="section-title" data-ko="7개 AI가 24시간 일합니다" data-en="7 AIs Work Around the Clock">7개 AI가 24시간 일합니다</h2>
+        <p class="section-desc" data-ko="각각의 전문 역할을 가진 AI 에이전트들이 쉬지 않고 정당을 운영합니다."
+           data-en="Specialized AI agents with distinct roles operate the party non-stop.">
+            각각의 전문 역할을 가진 AI 에이전트들이 쉬지 않고 정당을 운영합니다.
+        </p>
+        <div class="agents-grid">
+            <div class="agent-card fade-up">
+                <div class="emoji">🎯</div>
+                <h4 data-ko="오케스트레이터" data-en="Orchestrator">오케스트레이터</h4>
+                <p data-ko="전체 시스템 조율, 스케줄 관리, 대표 브리핑" data-en="System coordination, scheduling, executive briefing">전체 시스템 조율, 스케줄 관리, 대표 브리핑</p>
+                <div class="live-badge"><span class="dot"></span> LIVE</div>
+            </div>
+            <div class="agent-card fade-up">
+                <div class="emoji">🔬</div>
+                <h4 data-ko="정책 연구" data-en="Policy Research">정책 연구</h4>
+                <p data-ko="주간 자동 연구, 글로벌 비교, 정책안 생성" data-en="Weekly auto-research, global comparison, policy drafting">주간 자동 연구, 글로벌 비교, 정책안 생성</p>
+                <div class="live-badge"><span class="dot"></span> LIVE</div>
+            </div>
+            <div class="agent-card fade-up">
+                <div class="emoji">📋</div>
+                <h4 data-ko="정책 분석" data-en="Policy Analysis">정책 분석</h4>
+                <p data-ko="제안 접수, 실현가능성 AI 평가, 통계" data-en="Proposal intake, AI feasibility scoring, statistics">제안 접수, 실현가능성 AI 평가, 통계</p>
+                <div class="live-badge"><span class="dot"></span> LIVE</div>
+            </div>
+            <div class="agent-card fade-up">
+                <div class="emoji">💬</div>
+                <h4 data-ko="시민 상담" data-en="Citizen Support">시민 상담</h4>
+                <p data-ko="24/7 챗봇, FAQ, 문의 자동 분류" data-en="24/7 chatbot, FAQ, auto-classification">24/7 챗봇, FAQ, 문의 자동 분류</p>
+                <div class="live-badge"><span class="dot"></span> LIVE</div>
+            </div>
+            <div class="agent-card fade-up">
+                <div class="emoji">📱</div>
+                <h4 data-ko="SNS 마케팅" data-en="SNS Marketing">SNS 마케팅</h4>
+                <p data-ko="콘텐츠 자동 생성, 해시태그 최적화" data-en="Auto content generation, hashtag optimization">콘텐츠 자동 생성, 해시태그 최적화</p>
+                <div class="live-badge"><span class="dot"></span> LIVE</div>
+            </div>
+            <div class="agent-card fade-up">
+                <div class="emoji">📊</div>
+                <h4 data-ko="데이터 분석" data-en="Data Analytics">데이터 분석</h4>
+                <p data-ko="지지율 예측, 트렌드 분석, 선거 시뮬레이션" data-en="Support rate prediction, trend analysis, election simulation">지지율 예측, 트렌드 분석, 선거 시뮬레이션</p>
+                <div class="live-badge"><span class="dot"></span> LIVE</div>
+            </div>
+            <div class="agent-card fade-up">
+                <div class="emoji">🔍</div>
+                <h4 data-ko="의정 감시" data-en="Legislative Monitor">의정 감시</h4>
+                <p data-ko="국회의원 활동 추적, 법안 분석" data-en="Lawmaker tracking, bill analysis">국회의원 활동 추적, 법안 분석</p>
+                <div class="live-badge"><span class="dot"></span> LIVE</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── SOLUTION ENGINE ─── -->
+<section id="solution">
+    <div class="section-inner">
+        <div class="section-tag" data-ko="솔루션 엔진" data-en="SOLUTION ENGINE">솔루션 엔진</div>
+        <h2 class="section-title" data-ko="질문하면 AI가 해법을 찾습니다" data-en="Ask a Question, AI Finds the Solution">질문하면 AI가 해법을 찾습니다</h2>
+        <p class="section-desc" data-ko="시민의 질문 → 글로벌 데이터 분석 → 근거 기반 정책 솔루션. 감이 아닌 데이터로 답합니다."
+           data-en="Citizen question → Global data analysis → Evidence-based policy solution. We answer with data, not gut feelings.">
+            시민의 질문 → 글로벌 데이터 분석 → 근거 기반 정책 솔루션. 감이 아닌 데이터로 답합니다.
+        </p>
+
+        <div class="solution-demo fade-up">
+            <div class="solution-header">
+                <div class="icon">💡</div>
+                <div>
+                    <h3 data-ko="솔루션 엔진 작동 과정" data-en="How Solution Engine Works">솔루션 엔진 작동 과정</h3>
+                    <p data-ko='예시: "청년 주거 문제 해결책은?"' data-en='Example: "How to solve youth housing crisis?"'>예시: "청년 주거 문제 해결책은?"</p>
+                </div>
+            </div>
+            <div class="solution-flow">
+                <div class="flow-step">
+                    <div class="flow-icon" style="background:rgba(102,126,234,0.15);">📥</div>
+                    <div class="flow-content">
+                        <h4 data-ko="1. 질문 접수" data-en="1. Question Received">1. 질문 접수</h4>
+                        <p data-ko="시민의 질문을 오케스트레이터가 분석하고 관련 에이전트에게 전달" data-en="Orchestrator analyzes the question and routes to relevant agents">시민의 질문을 오케스트레이터가 분석하고 관련 에이전트에게 전달</p>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">
+                    <div class="flow-icon" style="background:rgba(72,187,120,0.15);">🌍</div>
+                    <div class="flow-content">
+                        <h4 data-ko="2. 글로벌 데이터 분석" data-en="2. Global Data Analysis">2. 글로벌 데이터 분석</h4>
+                        <p data-ko="🇩🇪 독일 사회주택 · 🇨🇦 캐나다 Co-housing · 🇸🇪 스웨덴 보조금 등 6개국 비교" data-en="🇩🇪 Germany social housing · 🇨🇦 Canada co-housing · 🇸🇪 Sweden subsidies — 6+ country comparison">🇩🇪 독일 사회주택 · 🇨🇦 캐나다 Co-housing · 🇸🇪 스웨덴 보조금 등 6개국 비교</p>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+                <div class="flow-step">
+                    <div class="flow-icon" style="background:rgba(237,137,54,0.15);">⚡</div>
+                    <div class="flow-content">
+                        <h4 data-ko="3. AI 솔루션 도출" data-en="3. AI Solution Generated">3. AI 솔루션 도출</h4>
+                        <p data-ko="단기/중기/장기 해법 + 예산 추정 + 실현가능성 점수 (75%) 제시" data-en="Short/mid/long-term solutions + budget estimate + feasibility score (75%)">단기/중기/장기 해법 + 예산 추정 + 실현가능성 점수 (75%) 제시</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── HOW IT WORKS ─── -->
+<section>
+    <div class="section-inner">
+        <div class="section-tag" data-ko="참여 방법" data-en="HOW IT WORKS">참여 방법</div>
+        <h2 class="section-title" data-ko="4단계로 참여하세요" data-en="Participate in 4 Steps">4단계로 참여하세요</h2>
+        <p class="section-desc" data-ko="누구나 정책에 참여할 수 있습니다. 앱을 다운로드하고 목소리를 내세요."
+           data-en="Anyone can participate in policy-making. Download the app and make your voice heard.">
+            누구나 정책에 참여할 수 있습니다. 앱을 다운로드하고 목소리를 내세요.
+        </p>
+        <div class="steps-grid">
+            <div class="step-item fade-up">
+                <div class="step-number">1</div>
+                <h4 data-ko="앱 다운로드" data-en="Download App">앱 다운로드</h4>
+                <p data-ko="Google Play에서 민주AI를 검색하고 설치하세요" data-en="Search and install MinjuAI on Google Play">Google Play에서 민주AI를 검색하고 설치하세요</p>
+            </div>
+            <div class="step-item fade-up">
+                <div class="step-number">2</div>
+                <h4 data-ko="정책 탐색" data-en="Explore Policies">정책 탐색</h4>
+                <p data-ko="AI가 연구한 52개 분야의 정책을 살펴보세요" data-en="Browse AI-researched policies across 52 areas">AI가 연구한 52개 분야의 정책을 살펴보세요</p>
+            </div>
+            <div class="step-item fade-up">
+                <div class="step-number">3</div>
+                <h4 data-ko="의견 제출" data-en="Submit Opinion">의견 제출</h4>
+                <p data-ko="찬성, 반대, 수정 의견을 제출하고 투표하세요" data-en="Submit support, oppose, or modify opinions and vote">찬성, 반대, 수정 의견을 제출하고 투표하세요</p>
+            </div>
+            <div class="step-item fade-up">
+                <div class="step-number">4</div>
+                <h4 data-ko="정책 반영" data-en="Policy Reflected">정책 반영</h4>
+                <p data-ko="시민 의견이 AI 정책안에 반영되어 최종 확정됩니다" data-en="Citizen opinions are reflected in AI policy and finalized">시민 의견이 AI 정책안에 반영되어 최종 확정됩니다</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── VISION ─── -->
+<section id="vision">
+    <div class="section-inner">
+        <div class="section-tag" data-ko="비전" data-en="VISION">비전</div>
+        <h2 class="section-title" data-ko="정치의 미래를 만듭니다" data-en="Building the Future of Politics">정치의 미래를 만듭니다</h2>
+        <p class="section-desc" data-ko="2028년 총선 10석 목표. 궁극적으로는 통일 한반도를 위한 Governance OS를 꿈꿉니다."
+           data-en="Targeting 10 seats in 2028 elections. Ultimately envisioning a Governance OS for a unified Korean peninsula.">
+            2028년 총선 10석 목표. 궁극적으로는 통일 한반도를 위한 Governance OS를 꿈꿉니다.
+        </p>
+        <div class="vision-grid">
+            <div class="vision-card fade-up">
+                <div class="vision-year">2026</div>
+                <h4 data-ko="플랫폼 구축" data-en="Platform Launch">플랫폼 구축</h4>
+                <p data-ko="7개 AI 에이전트 가동, 52개 정책 분야 연구 시작, 시민 참여 앱 출시, 정책 온톨로지 지식 그래프 구축."
+                   data-en="7 AI agents deployed, 52 policy area research begun, citizen participation app launched, policy ontology knowledge graph built.">
+                    7개 AI 에이전트 가동, 52개 정책 분야 연구 시작, 시민 참여 앱 출시, 정책 온톨로지 지식 그래프 구축.
+                </p>
+            </div>
+            <div class="vision-card fade-up">
+                <div class="vision-year">2028</div>
+                <h4 data-ko="총선 도전" data-en="Election Challenge">총선 도전</h4>
+                <p data-ko="국회의원 10석 당선 목표 (지역구 3석 + 비례대표 7석). 104개 완성된 정책으로 유권자에게 어필."
+                   data-en="Targeting 10 parliamentary seats (3 district + 7 proportional). Appealing to voters with 104 completed policies.">
+                    국회의원 10석 당선 목표 (지역구 3석 + 비례대표 7석). 104개 완성된 정책으로 유권자에게 어필.
+                </p>
+            </div>
+            <div class="vision-card fade-up">
+                <div class="vision-year">2030+</div>
+                <h4 data-ko="Governance OS" data-en="Governance OS">Governance OS</h4>
+                <p data-ko="AI 기반 거버넌스 운영 체제를 개발하여 통일 한반도의 투명하고 효율적인 행정 시스템을 구축합니다."
+                   data-en="Developing an AI-based governance operating system for transparent and efficient administration of a unified Korean peninsula.">
+                    AI 기반 거버넌스 운영 체제를 개발하여 통일 한반도의 투명하고 효율적인 행정 시스템을 구축합니다.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── CTA ─── -->
+<section class="cta-section" id="download">
+    <h2 data-ko="함께 새로운 정치를 시작하세요" data-en="Start a New Kind of Politics">함께 새로운 정치를 시작하세요</h2>
+    <p data-ko="세계 최초 AI 정당 앱. 지금 다운로드하고 민주주의의 미래에 참여하세요."
+       data-en="The world's first AI political party app. Download now and join the future of democracy.">
+        세계 최초 AI 정당 앱. 지금 다운로드하고 민주주의의 미래에 참여하세요.
+    </p>
+    <div class="cta-buttons">
+        <a href="https://play.google.com/store/apps/details?id=com.minjuai.app" target="_blank" class="btn btn-primary btn-cta">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
+            <span data-ko="Google Play 다운로드" data-en="Download on Google Play">Google Play 다운로드</span>
+        </a>
+        <a href="/app" class="btn btn-outline btn-cta" data-ko="🖥️ 웹 대시보드" data-en="🖥️ Web Dashboard">🖥️ 웹 대시보드</a>
+    </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+    <p>
+        <span data-ko="&copy; 2026 민주AI. AI가 운영하는 투명한 정당." data-en="&copy; 2026 MinjuAI. AI-operated transparent political party.">&copy; 2026 민주AI. AI가 운영하는 투명한 정당.</span>
+        <br>
+        <a href="/privacy" data-ko="개인정보처리방침" data-en="Privacy Policy">개인정보처리방침</a>
+        &nbsp;·&nbsp;
+        <a href="mailto:contact@minjuai.kr" data-ko="문의: contact@minjuai.kr" data-en="Contact: contact@minjuai.kr">문의: contact@minjuai.kr</a>
+    </p>
+</footer>
+
+<script>
+    // ─── Language Switcher ───
+    let currentLang = 'ko';
+
+    function setLang(lang) {
+        currentLang = lang;
+        document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+        document.documentElement.lang = lang;
+
+        document.querySelectorAll('[data-ko][data-en]').forEach(el => {
+            const text = el.getAttribute(`data-${lang}`);
+            if (text) el.innerHTML = text;
+        });
+    }
+
+    // ─── Navbar Scroll ───
+    window.addEventListener('scroll', () => {
+        document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // ─── Scroll Animation ───
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // ─── Live Stats from API ───
+    async function loadStats() {
+        try {
+            const res = await fetch('/api/dashboard');
+            const data = await res.json();
+            if (data.d_day) {
+                // Update with real data if available
+            }
+        } catch (e) {
+            // Use static defaults
+        }
+    }
+    loadStats();
+</script>
+
+</body>
+</html>
