@@ -396,6 +396,10 @@ async def service_worker():
 async def serve_frontend():
     return FileResponse(Path(__file__).parent / "index.html")
 
+@app.get("/privacy")
+async def privacy_policy():
+    return FileResponse(Path(__file__).parent / "privacy_policy.html")
+
 
 # 서버 실행
 if __name__ == "__main__":
