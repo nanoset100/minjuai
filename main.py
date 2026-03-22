@@ -646,6 +646,166 @@ async def get_monitoring_report():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============== 시민 제보 (District Reports) ==============
+
+class DistrictReportRequest(BaseModel):
+    district: str               # "서울 영등포구을"
+    mona_cd: str                # 의원 코드
+    report_type: str            # 현안/사진/기사/평가/공약/예산
+    title: str
+    content: str
+    news_url: Optional[str] = None
+    photo_urls: Optional[List[str]] = None
+    user_name: Optional[str] = "익명 시민"
+
+class DistrictRatingRequest(BaseModel):
+    district: str
+    mona_cd: str
+    score: int                  # 1~5
+    comment: Optional[str] = ""
+    user_name: Optional[str] = "익명 시민"
+
+
+@app.get("/api/districts")
+async def get_districts():
+    """전체 지역구 목록 (시/도별 그룹핑)"""
+    try:
+        lawmakers = monitoring_agent.get_all_lawmakers(sort_by="district")
+        lm_list = lawmakers.get("lawmakers", [])
+
+        regions = {}
+        for lm in lm_list:
+            district = lm.get("district", "")
+            if not district or lm.get("election_type") == "비례대표":
+                continue
+            region = district.split()[0] if " " in district else district
+            if region not in regions:
+                regions[region] = []
+            regions[region].append({
+                "mona_cd": lm.get("mona_cd", ""),
+                "name": lm.get("name", ""),
+                "party": lm.get("party", ""),
+                "district": district,
+                "bills_proposed": lm.get("bills_proposed", 0),
+            })
+
+        return {
+            "total_districts": sum(len(v) for v in regions.values()),
+            "regions": regions,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/districts/{district}/reports")
+async def get_district_reports(district: str):
+    """특정 지역구 시민 제보 목록"""
+    try:
+        result = supabase_admin.table("district_reports") \
+            .select("*") \
+            .eq("district", district) \
+            .order("created_at", desc=True) \
+            .limit(50) \
+            .execute()
+        return {"district": district, "reports": result.data, "total": len(result.data)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/districts/report")
+async def submit_district_report(req: DistrictReportRequest):
+    """시민 제보 등록"""
+    try:
+        log_agent_activity("시민감시단", "제보 접수", f"{req.district} - {req.title}")
+
+        data = {
+            "district": req.district,
+            "mona_cd": req.mona_cd,
+            "report_type": req.report_type,
+            "title": req.title,
+            "content": req.content,
+            "news_url": req.news_url,
+            "photo_urls": req.photo_urls or [],
+            "user_name": req.user_name,
+            "upvotes": 0,
+            "downvotes": 0,
+            "status": "published",
+            "created_at": datetime.now().isoformat(),
+        }
+
+        result = supabase_admin.table("district_reports").insert(data).execute()
+        return {"status": "success", "message": "제보가 등록되었습니다!", "report": result.data[0] if result.data else data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/districts/report/{report_id}/vote")
+async def vote_district_report(report_id: str, vote_type: str = "up"):
+    """시민 제보 공감/비공감"""
+    try:
+        field = "upvotes" if vote_type == "up" else "downvotes"
+        # 현재 값 조회
+        current = supabase_admin.table("district_reports").select(field).eq("id", report_id).execute()
+        if not current.data:
+            raise HTTPException(status_code=404, detail="제보를 찾을 수 없습니다.")
+        new_val = current.data[0].get(field, 0) + 1
+        supabase_admin.table("district_reports").update({field: new_val}).eq("id", report_id).execute()
+        return {"status": "success", "vote_type": vote_type, "new_count": new_val}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/districts/rating")
+async def submit_district_rating(req: DistrictRatingRequest):
+    """의원 시민 평점 등록"""
+    try:
+        if not 1 <= req.score <= 5:
+            raise HTTPException(status_code=400, detail="평점은 1~5 사이여야 합니다.")
+
+        data = {
+            "district": req.district,
+            "mona_cd": req.mona_cd,
+            "score": req.score,
+            "comment": req.comment,
+            "user_name": req.user_name,
+            "created_at": datetime.now().isoformat(),
+        }
+
+        supabase_admin.table("district_ratings").insert(data).execute()
+        return {"status": "success", "message": "평가가 등록되었습니다!"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/districts/{district}/rating")
+async def get_district_rating(district: str):
+    """특정 지역구 의원 평균 평점"""
+    try:
+        result = supabase_admin.table("district_ratings") \
+            .select("*") \
+            .eq("district", district) \
+            .order("created_at", desc=True) \
+            .execute()
+
+        ratings = result.data or []
+        if not ratings:
+            return {"district": district, "avg_score": 0, "total_ratings": 0, "ratings": []}
+
+        avg = round(sum(r["score"] for r in ratings) / len(ratings), 1)
+        return {
+            "district": district,
+            "avg_score": avg,
+            "total_ratings": len(ratings),
+            "ratings": ratings[:20],  # 최근 20개만
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============== 마케팅 (MarketingAgent) ==============
 
 @app.get("/api/marketing/stats")
