@@ -29,7 +29,7 @@ class SupportAgent:
     """
 
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
         self.model = "gpt-4o-mini"
         self.party_name = os.getenv("PARTY_NAME", "민주AI")
 

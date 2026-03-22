@@ -37,7 +37,7 @@ class AIPartyOrchestrator:
     """
     
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
         self.scheduler = AsyncIOScheduler()
         self.auto_approval_threshold = float(os.getenv("AUTO_APPROVAL_THRESHOLD", 0.85))
         

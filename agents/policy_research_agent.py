@@ -30,7 +30,7 @@ class PolicyResearchAgent:
     """주간 정책 자동 연구 에이전트"""
 
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
         self.model = "gpt-4o-mini"
 
     def _ai_call(self, system: str, prompt: str, max_tokens: int = 3000) -> str:

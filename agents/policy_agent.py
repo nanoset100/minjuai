@@ -111,7 +111,7 @@ class PolicyAgent:
         if not proposal:
             return {"error": "제안을 찾을 수 없습니다."}
 
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY", "").strip()
         if not api_key:
             return {"error": "OPENAI_API_KEY가 설정되지 않았습니다."}
 
@@ -164,7 +164,7 @@ class PolicyAgent:
 
     def analyze_proposal_data(self, title: str, description: str, category: str) -> Dict[str, Any]:
         """Supabase에서 호출용 — 제목/내용/카테고리로 직접 AI 분석"""
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv("OPENAI_API_KEY", "").strip()
         if not api_key:
             return {"error": "OPENAI_API_KEY가 설정되지 않았습니다."}
 

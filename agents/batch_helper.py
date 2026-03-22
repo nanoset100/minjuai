@@ -41,7 +41,7 @@ class BatchHelper:
     BATCH_STATE_FILE = "batch_state.json"
 
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
         self.state_dir = Path(__file__).parent.parent / "data" / "monitoring"
         self.state_dir.mkdir(parents=True, exist_ok=True)
         self.state_file = self.state_dir / self.BATCH_STATE_FILE

@@ -69,7 +69,7 @@ class MarketingAgent:
 
     def __init__(self):
         """초기화: Claude API 연결 및 데이터 디렉토리 설정"""
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
         self.party_name = os.getenv("PARTY_NAME", "민주AI")
 
         # 데이터 디렉토리
