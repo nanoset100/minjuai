@@ -540,31 +540,53 @@ async def get_analytics_report():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ============== 국회의원 모니터링 ==============
+# ============== 국회의원 모니터링 v2.0 (실제 국회 API 연동) ==============
 
 @app.get("/api/lawmakers")
-async def get_lawmakers():
+async def get_lawmakers(party: str = None, sort_by: str = "name"):
+    """전체 국회의원 목록 (실제 국회 API 데이터)"""
     try:
-        result = supabase_admin.table("lawmakers").select("*").execute()
-        return {"lawmakers": result.data, "total": len(result.data)}
+        return monitoring_agent.get_all_lawmakers(party=party, sort_by=sort_by)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/lawmakers/{lawmaker_id}")
-async def get_lawmaker_detail(lawmaker_id: str):
+@app.get("/api/lawmakers/search")
+async def search_lawmakers(q: str = ""):
+    """국회의원 검색 (이름/지역구/정당)"""
     try:
-        result = supabase_admin.table("lawmakers").select("*").eq("id", lawmaker_id).execute()
-        if not result.data:
-            raise HTTPException(status_code=404, detail="국회의원을 찾을 수 없습니다.")
-        return result.data[0]
+        return monitoring_agent.search_lawmakers(q)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/lawmakers/{mona_cd}")
+async def get_lawmaker_detail(mona_cd: str):
+    """국회의원 상세 정보"""
+    try:
+        result = monitoring_agent.get_lawmaker_detail(mona_cd)
+        if "error" in result:
+            raise HTTPException(status_code=404, detail=result["error"])
+        return result
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ============== 의정활동 모니터링 (MonitoringAgent) ==============
+# ============== 의정활동 모니터링 (MonitoringAgent v2.0) ==============
+
+@app.post("/api/monitoring/refresh")
+async def refresh_monitoring_data():
+    """국회 API에서 최신 데이터 수집 (관리자용)"""
+    try:
+        log_agent_activity("의정활동감시팀", "국회 데이터 수집", "국회 열린데이터 API 호출")
+        result = monitoring_agent.refresh_data()
+        log_agent_activity("의정활동감시팀", "수집 완료", f"의원 {result['total_lawmakers']}명")
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get("/api/monitoring/stats")
 async def get_monitoring_stats():
@@ -576,19 +598,20 @@ async def get_monitoring_stats():
 
 
 @app.get("/api/monitoring/vulnerable")
-async def get_vulnerable_districts():
-    """취약 지역구 Top 10"""
+async def get_vulnerable_districts(top_n: int = 10):
+    """취약 지역구 Top N"""
     try:
-        return monitoring_agent.find_vulnerable_districts(10)
+        return monitoring_agent.find_vulnerable_districts(top_n)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/monitoring/lawmaker/{lawmaker_id}")
-async def analyze_lawmaker(lawmaker_id: str):
-    """특정 의원 상세 분석"""
+@app.get("/api/monitoring/lawmaker/{identifier}")
+async def analyze_lawmaker(identifier: str):
+    """특정 의원 AI 상세 분석 (mona_cd 또는 이름)"""
     try:
-        result = monitoring_agent.analyze_lawmaker(lawmaker_id)
+        log_agent_activity("의정활동감시팀", "의원 분석", f"대상: {identifier}")
+        result = monitoring_agent.analyze_lawmaker(identifier)
         if "error" in result:
             raise HTTPException(status_code=404, detail=result["error"])
         return result
@@ -598,16 +621,27 @@ async def analyze_lawmaker(lawmaker_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/monitoring/strategy/{lawmaker_id}")
-async def get_attack_strategy(lawmaker_id: str):
-    """의원 공략 전략 생성"""
+@app.get("/api/monitoring/strategy/{identifier}")
+async def get_attack_strategy(identifier: str):
+    """의원 공략 전략 AI 생성 (mona_cd 또는 이름)"""
     try:
-        result = monitoring_agent.get_attack_strategy(lawmaker_id)
+        log_agent_activity("의정활동감시팀", "공략 전략 생성", f"대상: {identifier}")
+        result = monitoring_agent.get_attack_strategy(identifier)
         if "error" in result:
             raise HTTPException(status_code=404, detail=result["error"])
         return result
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/monitoring/report")
+async def get_monitoring_report():
+    """의정활동 종합 리포트 생성"""
+    try:
+        log_agent_activity("의정활동감시팀", "리포트 생성", "종합 리포트")
+        return monitoring_agent.generate_report()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

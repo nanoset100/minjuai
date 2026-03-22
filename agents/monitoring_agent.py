@@ -1,735 +1,500 @@
 """
-의정활동감시팀 AI 에이전트
-국회의원 의정활동 모니터링 및 취약 지역구 발굴
+의정활동감시팀 AI 에이전트 v2.0
+- 국회 열린데이터 API 실제 데이터 연동
+- GPT-4o mini AI 분석 리포트 생성
+- Supabase DB 저장
 """
 
 import json
 import os
-import random
 from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+
+from agents.assembly_collector import AssemblyCollector
 
 
 class MonitoringAgent:
-    """국회의원 의정활동을 모니터링하고 취약 지역구를 발굴하는 AI 에이전트"""
+    """국회의원 의정활동을 실시간 모니터링하고 AI 분석하는 에이전트"""
 
     def __init__(self):
-        self.base_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "monitoring")
-        self.lawmakers_file = os.path.join(self.base_dir, "lawmakers.json")
+        self.collector = AssemblyCollector()
+        self.data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "assembly")
+        self.cache_file = os.path.join(self.data_dir, "lawmakers_enriched.json")
+        os.makedirs(self.data_dir, exist_ok=True)
 
-        os.makedirs(self.base_dir, exist_ok=True)
+        # 캐시 로드 (있으면)
+        self.lawmakers = self._load_cache()
 
-        if not os.path.exists(self.lawmakers_file):
-            self._generate_seed_data()
+    def _load_cache(self) -> List[Dict]:
+        """캐시된 데이터 로드"""
+        if os.path.exists(self.cache_file):
+            try:
+                with open(self.cache_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return []
 
-        self.lawmakers = self._load_lawmakers()
-
-    def _load_lawmakers(self):
-        with open(self.lawmakers_file, "r", encoding="utf-8") as f:
-            return json.load(f)
-
-    def _save_lawmakers(self):
-        with open(self.lawmakers_file, "w", encoding="utf-8") as f:
+    def _save_cache(self):
+        """캐시 저장"""
+        with open(self.cache_file, "w", encoding="utf-8") as f:
             json.dump(self.lawmakers, f, ensure_ascii=False, indent=2)
 
-    def _generate_seed_data(self):
-        """20명의 시드 데이터 생성 (가상 데이터)"""
-        seed = [
-            {
-                "id": "lm_001",
-                "name": "김태호",
-                "district": "서울 강남구갑",
-                "party": "국민의힘",
-                "term": 3,
-                "age": 62,
-                "activities": {
-                    "bills_proposed": 5,
-                    "attendance_rate": 55,
-                    "committee_activity": "낮음",
-                    "promise_fulfillment": 30
-                },
-                "scandals": ["부동산 투기 의혹", "정치자금법 위반 논란"],
-                "local_issues": ["강남 교통 혼잡", "학원가 과열", "재건축 규제"]
-            },
-            {
-                "id": "lm_002",
-                "name": "박수진",
-                "district": "서울 강북구을",
-                "party": "더불어민주당",
-                "term": 2,
-                "age": 51,
-                "activities": {
-                    "bills_proposed": 18,
-                    "attendance_rate": 88,
-                    "committee_activity": "높음",
-                    "promise_fulfillment": 72
-                },
-                "scandals": [],
-                "local_issues": ["노후 주거환경", "상권 활성화"]
-            },
-            {
-                "id": "lm_003",
-                "name": "이정우",
-                "district": "서울 송파구갑",
-                "party": "국민의힘",
-                "term": 1,
-                "age": 45,
-                "activities": {
-                    "bills_proposed": 8,
-                    "attendance_rate": 72,
-                    "committee_activity": "보통",
-                    "promise_fulfillment": 50
-                },
-                "scandals": ["논문 표절 의혹"],
-                "local_issues": ["잠실 재건축", "교통 인프라"]
-            },
-            {
-                "id": "lm_004",
-                "name": "최미영",
-                "district": "서울 마포구갑",
-                "party": "더불어민주당",
-                "term": 4,
-                "age": 67,
-                "activities": {
-                    "bills_proposed": 3,
-                    "attendance_rate": 45,
-                    "committee_activity": "낮음",
-                    "promise_fulfillment": 25
-                },
-                "scandals": ["보좌관 갑질 논란"],
-                "local_issues": ["홍대입구 상권", "청년 주거"]
-            },
-            {
-                "id": "lm_005",
-                "name": "정현석",
-                "district": "서울 영등포구갑",
-                "party": "국민의힘",
-                "term": 2,
-                "age": 58,
-                "activities": {
-                    "bills_proposed": 10,
-                    "attendance_rate": 78,
-                    "committee_activity": "보통",
-                    "promise_fulfillment": 55
-                },
-                "scandals": [],
-                "local_issues": ["여의도 개발", "산업단지 현대화"]
-            },
-            {
-                "id": "lm_006",
-                "name": "한지민",
-                "district": "경기 수원시갑",
-                "party": "더불어민주당",
-                "term": 1,
-                "age": 42,
-                "activities": {
-                    "bills_proposed": 22,
-                    "attendance_rate": 92,
-                    "committee_activity": "높음",
-                    "promise_fulfillment": 68
-                },
-                "scandals": [],
-                "local_issues": ["수원 광교 교통", "화성 연계 개발"]
-            },
-            {
-                "id": "lm_007",
-                "name": "오승현",
-                "district": "경기 성남시갑",
-                "party": "국민의힘",
-                "term": 2,
-                "age": 55,
-                "activities": {
-                    "bills_proposed": 7,
-                    "attendance_rate": 60,
-                    "committee_activity": "낮음",
-                    "promise_fulfillment": 35
-                },
-                "scandals": ["부동산 투기 의혹"],
-                "local_issues": ["판교 IT밸리 확장", "구도심 재개발"]
-            },
-            {
-                "id": "lm_008",
-                "name": "윤서연",
-                "district": "경기 용인시갑",
-                "party": "더불어민주당",
-                "term": 3,
-                "age": 64,
-                "activities": {
-                    "bills_proposed": 4,
-                    "attendance_rate": 50,
-                    "committee_activity": "낮음",
-                    "promise_fulfillment": 28
-                },
-                "scandals": ["선거법 위반 전력"],
-                "local_issues": ["교통 인프라 부족", "난개발 문제"]
-            },
-            {
-                "id": "lm_009",
-                "name": "강민재",
-                "district": "경기 부천시갑",
-                "party": "국민의힘",
-                "term": 1,
-                "age": 48,
-                "activities": {
-                    "bills_proposed": 15,
-                    "attendance_rate": 85,
-                    "committee_activity": "높음",
-                    "promise_fulfillment": 62
-                },
-                "scandals": [],
-                "local_issues": ["산업단지 환경오염", "주거환경 개선"]
-            },
-            {
-                "id": "lm_010",
-                "name": "서영호",
-                "district": "경기 고양시갑",
-                "party": "더불어민주당",
-                "term": 2,
-                "age": 53,
-                "activities": {
-                    "bills_proposed": 11,
-                    "attendance_rate": 75,
-                    "committee_activity": "보통",
-                    "promise_fulfillment": 58
-                },
-                "scandals": ["음주운전 전력"],
-                "local_issues": ["일산 신도시 노후화", "GTX 연계"]
-            },
-            {
-                "id": "lm_011",
-                "name": "임도현",
-                "district": "부산 해운대구갑",
-                "party": "국민의힘",
-                "term": 3,
-                "age": 61,
-                "activities": {
-                    "bills_proposed": 6,
-                    "attendance_rate": 58,
-                    "committee_activity": "낮음",
-                    "promise_fulfillment": 32
-                },
-                "scandals": ["부동산 투기", "세금 체납"],
-                "local_issues": ["해운대 관광 활성화", "해수욕장 관리"]
-            },
-            {
-                "id": "lm_012",
-                "name": "배지혜",
-                "district": "부산 사하구갑",
-                "party": "더불어민주당",
-                "term": 1,
-                "age": 39,
-                "activities": {
-                    "bills_proposed": 20,
-                    "attendance_rate": 90,
-                    "committee_activity": "높음",
-                    "promise_fulfillment": 70
-                },
-                "scandals": [],
-                "local_issues": ["낙동강 하류 환경", "을숙도 보존"]
-            },
-            {
-                "id": "lm_013",
-                "name": "조성태",
-                "district": "부산 동래구갑",
-                "party": "국민의힘",
-                "term": 2,
-                "age": 57,
-                "activities": {
-                    "bills_proposed": 9,
-                    "attendance_rate": 70,
-                    "committee_activity": "보통",
-                    "promise_fulfillment": 45
-                },
-                "scandals": ["학력 위조 의혹"],
-                "local_issues": ["온천장 관광 개발", "교통체증"]
-            },
-            {
-                "id": "lm_014",
-                "name": "홍석진",
-                "district": "대구 수성구갑",
-                "party": "국민의힘",
-                "term": 4,
-                "age": 70,
-                "activities": {
-                    "bills_proposed": 2,
-                    "attendance_rate": 40,
-                    "committee_activity": "낮음",
-                    "promise_fulfillment": 20
-                },
-                "scandals": ["비서 성추행 의혹", "정치자금 유용"],
-                "local_issues": ["수성못 주변 개발", "대구 의료 특화"]
-            },
-            {
-                "id": "lm_015",
-                "name": "권나현",
-                "district": "대구 달서구갑",
-                "party": "국민의힘",
-                "term": 1,
-                "age": 44,
-                "activities": {
-                    "bills_proposed": 14,
-                    "attendance_rate": 82,
-                    "committee_activity": "보통",
-                    "promise_fulfillment": 60
-                },
-                "scandals": [],
-                "local_issues": ["성서공단 현대화", "교육 인프라"]
-            },
-            {
-                "id": "lm_016",
-                "name": "유진호",
-                "district": "대전 유성구갑",
-                "party": "더불어민주당",
-                "term": 2,
-                "age": 50,
-                "activities": {
-                    "bills_proposed": 16,
-                    "attendance_rate": 87,
-                    "committee_activity": "높음",
-                    "promise_fulfillment": 65
-                },
-                "scandals": [],
-                "local_issues": ["대덕연구단지 활성화", "충청권 메가시티"]
-            },
-            {
-                "id": "lm_017",
-                "name": "남궁혁",
-                "district": "광주 서구갑",
-                "party": "더불어민주당",
-                "term": 3,
-                "age": 63,
-                "activities": {
-                    "bills_proposed": 9,
-                    "attendance_rate": 65,
-                    "committee_activity": "보통",
-                    "promise_fulfillment": 42
-                },
-                "scandals": ["위장전입 논란"],
-                "local_issues": ["AI 집적단지", "광주형 일자리"]
-            },
-            {
-                "id": "lm_018",
-                "name": "신하은",
-                "district": "울산 남구갑",
-                "party": "국민의힘",
-                "term": 1,
-                "age": 46,
-                "activities": {
-                    "bills_proposed": 12,
-                    "attendance_rate": 80,
-                    "committee_activity": "보통",
-                    "promise_fulfillment": 55
-                },
-                "scandals": [],
-                "local_issues": ["현대자동차 전환", "에너지산업 전환"]
-            },
-            {
-                "id": "lm_019",
-                "name": "문재식",
-                "district": "인천 남동구갑",
-                "party": "더불어민주당",
-                "term": 2,
-                "age": 56,
-                "activities": {
-                    "bills_proposed": 6,
-                    "attendance_rate": 62,
-                    "committee_activity": "낮음",
-                    "promise_fulfillment": 38
-                },
-                "scandals": ["투기 의혹"],
-                "local_issues": ["소래포구 관광", "구월동 상권"]
-            },
-            {
-                "id": "lm_020",
-                "name": "장윤기",
-                "district": "경남 창원시갑",
-                "party": "국민의힘",
-                "term": 3,
-                "age": 66,
-                "activities": {
-                    "bills_proposed": 3,
-                    "attendance_rate": 48,
-                    "committee_activity": "낮음",
-                    "promise_fulfillment": 22
-                },
-                "scandals": ["지역 업체 특혜 의혹"],
-                "local_issues": ["방산업체 클러스터", "창원 경제 활성화"]
-            },
-        ]
+    # ==================== 데이터 수집 ====================
 
-        # 취약도 점수 및 약점 자동 계산
-        for lm in seed:
-            lm["vulnerability_score"] = self._calc_vulnerability(lm)
-            lm["weak_points"] = self._identify_weak_points(lm)
-            lm["last_updated"] = datetime.now().strftime("%Y-%m-%d")
+    def refresh_data(self) -> Dict:
+        """국회 API에서 최신 데이터 수집 (스케줄러용)"""
+        result = self.collector.build_full_dataset()
+        self.lawmakers = self._load_cache()
+        return result
 
-        with open(self.lawmakers_file, "w", encoding="utf-8") as f:
-            json.dump(seed, f, ensure_ascii=False, indent=2)
-
-    def _calc_vulnerability(self, lm):
-        """취약도 점수 계산 (0-100)"""
-        act = lm["activities"]
-
-        attendance_factor = (100 - act["attendance_rate"]) * 0.3
-        promise_factor = (100 - act["promise_fulfillment"]) * 0.4
-        scandal_factor = min(len(lm.get("scandals", [])) * 15, 30) * (20 / 30)
-        age_factor = max(0, (lm.get("age", 50) - 55)) * 1.0
-
-        raw = attendance_factor + promise_factor + scandal_factor + age_factor
-        return round(min(max(raw, 0), 100), 1)
-
-    def _identify_weak_points(self, lm):
-        """약점 자동 파악"""
-        points = []
-        act = lm["activities"]
-
-        if act["attendance_rate"] < 70:
-            points.append(f"출석률 낮음 ({act['attendance_rate']}%)")
-        if act["promise_fulfillment"] < 50:
-            points.append(f"공약 이행률 {act['promise_fulfillment']}%")
-        if act["bills_proposed"] < 7:
-            points.append(f"법안 발의 저조 ({act['bills_proposed']}건)")
-        if act["committee_activity"] == "낮음":
-            points.append("위원회 활동 미흡")
-        if lm.get("scandals"):
-            for s in lm["scandals"]:
-                points.append(f"스캔들: {s}")
-        if lm.get("age", 0) >= 65:
-            points.append(f"고령 ({lm['age']}세)")
-
-        return points
-
-    def analyze_lawmaker(self, lawmaker_id):
-        """특정 의원 상세 분석"""
-        lm = next((l for l in self.lawmakers if l["id"] == lawmaker_id), None)
-        if not lm:
-            return {"error": f"의원 ID '{lawmaker_id}'를 찾을 수 없습니다."}
-
-        score = lm["vulnerability_score"]
-        if score >= 70:
-            level = "높음 (공략 가능)"
-        elif score >= 50:
-            level = "중간 (검토 필요)"
-        else:
-            level = "낮음 (어려움)"
-
-        bills = lm["activities"]["bills_proposed"]
-        if bills >= 15:
-            bill_grade = "우수"
-        elif bills >= 8:
-            bill_grade = "보통"
-        else:
-            bill_grade = "미흡"
-
+    def collect_lawmakers_only(self) -> Dict:
+        """의원 인적사항만 빠르게 수집"""
+        lawmakers = self.collector.collect_lawmakers()
+        self.lawmakers = lawmakers
         return {
-            "lawmaker": {
-                "id": lm["id"],
-                "name": lm["name"],
-                "district": lm["district"],
-                "party": lm["party"],
-                "term": f"{lm['term']}선",
-                "age": lm.get("age"),
-            },
-            "activities": {
-                "bills_proposed": f"{bills}건 ({bill_grade})",
-                "attendance_rate": f"{lm['activities']['attendance_rate']}%",
-                "committee_activity": lm["activities"]["committee_activity"],
-                "promise_fulfillment": f"{lm['activities']['promise_fulfillment']}%",
-            },
-            "vulnerability": {
-                "score": score,
-                "level": level,
-                "weak_points": lm["weak_points"],
-                "scandals": lm.get("scandals", []),
-            },
-            "local_issues": lm.get("local_issues", []),
-            "last_updated": lm.get("last_updated"),
+            "status": "success",
+            "total": len(lawmakers),
+            "collected_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
         }
 
-    def find_vulnerable_districts(self, top_n=10):
-        """취약 지역구 Top N 발굴"""
-        sorted_lm = sorted(self.lawmakers, key=lambda x: x["vulnerability_score"], reverse=True)
-        results = []
+    # ==================== 의원 조회 ====================
 
-        for rank, lm in enumerate(sorted_lm[:top_n], 1):
-            score = lm["vulnerability_score"]
-            win_chance = self._estimate_win_chance(lm)
+    def get_all_lawmakers(self, party: str = None, sort_by: str = "name") -> Dict:
+        """전체 의원 목록 (필터/정렬)"""
+        if not self.lawmakers:
+            return {"error": "데이터가 없습니다. /api/monitoring/refresh 를 먼저 호출하세요.", "lawmakers": []}
 
-            results.append({
-                "rank": rank,
-                "lawmaker_id": lm["id"],
-                "name": lm["name"],
-                "district": lm["district"],
-                "party": lm["party"],
-                "vulnerability_score": score,
-                "win_chance": win_chance,
-                "top_weak_points": lm["weak_points"][:3],
-                "priority": "최우선" if score >= 75 else ("우선" if score >= 65 else "검토"),
+        filtered = self.lawmakers
+        if party:
+            filtered = [lm for lm in filtered if party in lm.get("party", "")]
+
+        # 정렬
+        if sort_by == "bills":
+            filtered.sort(key=lambda x: x.get("bills_proposed", 0), reverse=True)
+        elif sort_by == "party":
+            filtered.sort(key=lambda x: x.get("party", ""))
+        elif sort_by == "district":
+            filtered.sort(key=lambda x: x.get("district", ""))
+        else:
+            filtered.sort(key=lambda x: x.get("name", ""))
+
+        # 간략화된 목록
+        summary = []
+        for lm in filtered:
+            summary.append({
+                "mona_cd": lm.get("mona_cd", ""),
+                "name": lm.get("name", ""),
+                "party": lm.get("party", ""),
+                "district": lm.get("district", ""),
+                "election_type": lm.get("election_type", ""),
+                "reelection": lm.get("reelection", ""),
+                "committee": lm.get("committee", ""),
+                "bills_proposed": lm.get("bills_proposed", 0),
+                "photo_url": lm.get("photo_url", ""),
             })
 
         return {
-            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "total_analyzed": len(self.lawmakers),
-            "top_districts": results,
+            "total": len(summary),
+            "filter": {"party": party} if party else "전체",
+            "sort_by": sort_by,
+            "lawmakers": summary,
         }
 
-    def _estimate_win_chance(self, lm):
-        """AI 정당 승산 추정"""
-        score = lm["vulnerability_score"]
-
-        base = score * 0.55
-        if lm["term"] >= 3:
-            base += 5
-        if len(lm.get("scandals", [])) >= 2:
-            base += 8
-        if lm["activities"]["attendance_rate"] < 50:
-            base += 5
-
-        chance = round(min(max(base, 5), 85), 1)
-        return f"{chance}%"
-
-    def get_attack_strategy(self, lawmaker_id):
-        """해당 의원 공략 전략 생성"""
-        lm = next((l for l in self.lawmakers if l["id"] == lawmaker_id), None)
+    def get_lawmaker_detail(self, mona_cd: str) -> Dict:
+        """의원 상세 정보"""
+        lm = next((l for l in self.lawmakers if l.get("mona_cd") == mona_cd), None)
         if not lm:
-            return {"error": f"의원 ID '{lawmaker_id}'를 찾을 수 없습니다."}
-
-        score = lm["vulnerability_score"]
-        act = lm["activities"]
-
-        # 필요 정책 도출
-        policies = []
-        for issue in lm.get("local_issues", []):
-            policies.append(f"{issue} 해결 정책")
-        if act["attendance_rate"] < 70:
-            policies.append("의정활동 투명성 강화 공약")
-        if act["promise_fulfillment"] < 50:
-            policies.append("주민 직접 참여 정책결정 시스템")
-
-        # 약점 기반 전략
-        attack_points = []
-        if act["attendance_rate"] < 70:
-            attack_points.append(f"출석률 {act['attendance_rate']}% - 국정 태만 부각")
-        if act["promise_fulfillment"] < 50:
-            attack_points.append(f"공약 이행률 {act['promise_fulfillment']}% - 약속 불이행 강조")
-        if act["bills_proposed"] < 7:
-            attack_points.append(f"법안 발의 {act['bills_proposed']}건 - 입법 활동 부진 비판")
-        for s in lm.get("scandals", []):
-            attack_points.append(f"스캔들: {s}")
-
-        # 예상 득표율
-        win = float(self._estimate_win_chance(lm).replace("%", ""))
-        incumbent = round(100 - win - random.uniform(15, 25), 1)
-        others = round(100 - win - incumbent, 1)
-
-        verdict = "승리 가능" if win > incumbent else ("접전" if abs(win - incumbent) < 5 else "도전적")
+            # 이름으로도 검색
+            lm = next((l for l in self.lawmakers if l.get("name") == mona_cd), None)
+        if not lm:
+            return {"error": f"의원 '{mona_cd}'을(를) 찾을 수 없습니다."}
 
         return {
-            "target": {
-                "name": lm["name"],
-                "district": lm["district"],
-                "party": lm["party"],
-                "vulnerability_score": score,
-            },
-            "strategy": {
-                "required_policies": policies,
-                "attack_points": attack_points,
-                "key_message": f"{lm['district']} 주민을 위한 실질적 변화, AI 정당이 시작합니다",
-            },
-            "prediction": {
-                "ai_party": f"{win}%",
-                "incumbent": f"{incumbent}%",
-                "others": f"{others}%",
-                "verdict": verdict,
-            },
-            "action_plan": [
-                f"1단계: {lm['district']} 지역 현안 조사 및 주민 의견 수렴",
-                f"2단계: {', '.join(lm.get('local_issues', [])[:2])} 관련 정책 발표",
-                f"3단계: 현역 의원 의정활동 평가 보고서 배포",
-                f"4단계: AI 정당 후보자 선정 및 캠페인 시작",
-            ],
+            "lawmaker": lm,
+            "analysis": self._quick_analysis(lm),
         }
 
-    def get_monitoring_stats(self):
+    def search_lawmakers(self, query: str) -> Dict:
+        """의원 검색 (이름, 지역구, 정당)"""
+        results = []
+        q = query.lower()
+        for lm in self.lawmakers:
+            if (q in lm.get("name", "").lower() or
+                q in lm.get("district", "").lower() or
+                q in lm.get("party", "").lower() or
+                q in lm.get("committee", "").lower()):
+                results.append({
+                    "mona_cd": lm.get("mona_cd", ""),
+                    "name": lm.get("name", ""),
+                    "party": lm.get("party", ""),
+                    "district": lm.get("district", ""),
+                    "bills_proposed": lm.get("bills_proposed", 0),
+                })
+        return {"query": query, "results": results, "count": len(results)}
+
+    # ==================== AI 분석 ====================
+
+    def _quick_analysis(self, lm: Dict) -> Dict:
+        """의원 빠른 분석"""
+        bills = lm.get("bills_proposed", 0)
+        reelection = lm.get("reelection", "")
+
+        # 재선 횟수 파싱
+        term = 1
+        if "재선" in reelection:
+            term = 2
+        elif "3선" in reelection:
+            term = 3
+        elif "4선" in reelection:
+            term = 4
+        elif "5선" in reelection:
+            term = 5
+        elif "초선" in reelection:
+            term = 1
+
+        # 법안 발의 등급
+        if bills >= 30:
+            bill_grade = "매우 우수"
+        elif bills >= 15:
+            bill_grade = "우수"
+        elif bills >= 8:
+            bill_grade = "보통"
+        elif bills >= 3:
+            bill_grade = "미흡"
+        else:
+            bill_grade = "매우 저조"
+
+        # 활동 점수 계산 (법안 기반, 0~100)
+        activity_score = min(100, round(bills * 2.5))
+
+        return {
+            "term": f"{term}선" if term > 1 else "초선",
+            "bills_proposed": bills,
+            "bill_grade": bill_grade,
+            "activity_score": activity_score,
+            "election_type": lm.get("election_type", ""),
+            "committee": lm.get("committee", ""),
+        }
+
+    def analyze_lawmaker(self, identifier: str) -> Dict:
+        """특정 의원 상세 AI 분석"""
+        detail = self.get_lawmaker_detail(identifier)
+        if "error" in detail:
+            return detail
+
+        lm = detail["lawmaker"]
+        analysis = detail["analysis"]
+
+        # AI 분석 리포트 생성 (GPT-4o mini)
+        try:
+            from ai_client import ai_call
+            prompt = f"""다음 국회의원의 의정활동을 분석해주세요:
+
+이름: {lm['name']}
+정당: {lm['party']}
+지역구: {lm['district']}
+선수: {analysis['term']}
+소속위원회: {lm.get('committee', '없음')}
+발의법안 수: {analysis['bills_proposed']}건 ({analysis['bill_grade']})
+선거유형: {lm.get('election_type', '')}
+경력: {lm.get('career', '')[:200]}
+
+분석 항목:
+1. 입법 활동 평가 (발의 법안 수 기준)
+2. 위원회 활동 의미
+3. 종합 의정활동 등급 (A/B/C/D/F)
+4. 개선이 필요한 부분
+5. 시민을 위한 한줄 요약
+
+한국어로 간결하게 답변해주세요."""
+
+            ai_report = ai_call(prompt, system="당신은 대한민국 국회 의정활동 전문 분석가입니다. 객관적이고 공정하게 분석합니다.", max_tokens=500)
+        except Exception as e:
+            ai_report = f"AI 분석 일시 불가: {str(e)}"
+
+        return {
+            "lawmaker": {
+                "mona_cd": lm.get("mona_cd", ""),
+                "name": lm["name"],
+                "party": lm["party"],
+                "district": lm["district"],
+                "photo_url": lm.get("photo_url", ""),
+                "email": lm.get("email", ""),
+                "homepage": lm.get("homepage", ""),
+            },
+            "analysis": analysis,
+            "ai_report": ai_report,
+            "data_source": "국회 열린데이터 포털 (open.assembly.go.kr)",
+            "analyzed_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+
+    # ==================== 통계 ====================
+
+    def get_monitoring_stats(self) -> Dict:
         """전체 모니터링 통계"""
+        if not self.lawmakers:
+            return {"error": "데이터가 없습니다. /api/monitoring/refresh 를 먼저 호출하세요."}
+
         total = len(self.lawmakers)
 
-        high = [l for l in self.lawmakers if l["vulnerability_score"] >= 70]
-        mid = [l for l in self.lawmakers if 50 <= l["vulnerability_score"] < 70]
-        low = [l for l in self.lawmakers if l["vulnerability_score"] < 50]
-
-        # 정당별 분석
+        # 정당별 통계
         party_stats = {}
         for lm in self.lawmakers:
-            p = lm["party"]
+            p = lm.get("party", "무소속")
             if p not in party_stats:
-                party_stats[p] = {"count": 0, "avg_vulnerability": 0, "total_score": 0}
+                party_stats[p] = {"count": 0, "total_bills": 0, "districts": [], "proportional": 0}
             party_stats[p]["count"] += 1
-            party_stats[p]["total_score"] += lm["vulnerability_score"]
-        for p in party_stats:
-            party_stats[p]["avg_vulnerability"] = round(
-                party_stats[p]["total_score"] / party_stats[p]["count"], 1
-            )
-            del party_stats[p]["total_score"]
+            party_stats[p]["total_bills"] += lm.get("bills_proposed", 0)
+            if lm.get("election_type") == "비례대표":
+                party_stats[p]["proportional"] += 1
+            else:
+                party_stats[p]["districts"].append(lm.get("district", ""))
 
-        # 지역별 분석
+        for p in party_stats:
+            cnt = party_stats[p]["count"]
+            party_stats[p]["avg_bills"] = round(party_stats[p]["total_bills"] / cnt, 1) if cnt else 0
+            party_stats[p]["district_count"] = cnt - party_stats[p]["proportional"]
+            del party_stats[p]["districts"]  # 목록은 제거 (길어서)
+
+        # 지역별 통계
         region_stats = {}
         for lm in self.lawmakers:
-            region = lm["district"].split()[0]
+            district = lm.get("district", "")
+            if not district:
+                continue
+            region = district.split()[0] if " " in district else district
             if region not in region_stats:
-                region_stats[region] = {"count": 0, "vulnerable": 0}
+                region_stats[region] = {"count": 0, "total_bills": 0}
             region_stats[region]["count"] += 1
-            if lm["vulnerability_score"] >= 70:
-                region_stats[region]["vulnerable"] += 1
+            region_stats[region]["total_bills"] += lm.get("bills_proposed", 0)
 
-        avg_score = round(sum(l["vulnerability_score"] for l in self.lawmakers) / total, 1) if total else 0
+        for r in region_stats:
+            cnt = region_stats[r]["count"]
+            region_stats[r]["avg_bills"] = round(region_stats[r]["total_bills"] / cnt, 1) if cnt else 0
+
+        # 전체 법안 통계
+        all_bills = [lm.get("bills_proposed", 0) for lm in self.lawmakers]
+        avg_bills = round(sum(all_bills) / total, 1) if total else 0
+        max_bills = max(all_bills) if all_bills else 0
+        min_bills = min(all_bills) if all_bills else 0
+
+        # 법안 발의 분포
+        grade_dist = {
+            "매우우수(30+)": len([b for b in all_bills if b >= 30]),
+            "우수(15-29)": len([b for b in all_bills if 15 <= b < 30]),
+            "보통(8-14)": len([b for b in all_bills if 8 <= b < 14]),
+            "미흡(3-7)": len([b for b in all_bills if 3 <= b < 8]),
+            "매우저조(0-2)": len([b for b in all_bills if b < 3]),
+        }
+
+        # 상위/하위 의원
+        sorted_by_bills = sorted(self.lawmakers, key=lambda x: x.get("bills_proposed", 0), reverse=True)
+        top5 = [{"name": lm["name"], "party": lm["party"], "district": lm.get("district", ""), "bills": lm.get("bills_proposed", 0)} for lm in sorted_by_bills[:5]]
+        bottom5 = [{"name": lm["name"], "party": lm["party"], "district": lm.get("district", ""), "bills": lm.get("bills_proposed", 0)} for lm in sorted_by_bills[-5:]]
 
         return {
             "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "data_source": "국회 열린데이터 포털 (open.assembly.go.kr)",
             "overview": {
                 "total_lawmakers": total,
-                "average_vulnerability": avg_score,
-                "high_vulnerability": f"{len(high)}명 (70+)",
-                "mid_vulnerability": f"{len(mid)}명 (50-69)",
-                "low_vulnerability": f"{len(low)}명 (0-49)",
+                "total_bills": sum(all_bills),
+                "avg_bills_per_lawmaker": avg_bills,
+                "max_bills": max_bills,
+                "min_bills": min_bills,
             },
+            "grade_distribution": grade_dist,
             "by_party": party_stats,
             "by_region": region_stats,
-            "target_summary": {
-                "attackable": len(high),
-                "review_needed": len(mid),
-                "difficult": len(low),
-            },
+            "top5_lawmakers": top5,
+            "bottom5_lawmakers": bottom5,
             "ai_party_goal": {
                 "district_seats_target": 3,
                 "proportional_seats_target": 7,
                 "total_target": 10,
-                "feasible_districts": len([l for l in high if float(self._estimate_win_chance(l).replace("%", "")) > 40]),
+                "target_election": "2028 총선",
             },
         }
 
-    def update_lawmaker(self, lawmaker_id, updates):
-        """의원 정보 업데이트"""
-        for i, lm in enumerate(self.lawmakers):
-            if lm["id"] == lawmaker_id:
-                if "activities" in updates:
-                    lm["activities"].update(updates["activities"])
-                if "scandals" in updates:
-                    lm["scandals"] = updates["scandals"]
-                if "local_issues" in updates:
-                    lm["local_issues"] = updates["local_issues"]
+    def find_vulnerable_districts(self, top_n: int = 10) -> Dict:
+        """취약 지역구 발굴 (법안 발의 저조한 의원 지역구)"""
+        if not self.lawmakers:
+            return {"error": "데이터가 없습니다."}
 
-                lm["vulnerability_score"] = self._calc_vulnerability(lm)
-                lm["weak_points"] = self._identify_weak_points(lm)
-                lm["last_updated"] = datetime.now().strftime("%Y-%m-%d")
-
-                self.lawmakers[i] = lm
-                self._save_lawmakers()
-                return {"status": "updated", "lawmaker": lm["name"], "new_score": lm["vulnerability_score"]}
-
-        return {"error": f"의원 ID '{lawmaker_id}'를 찾을 수 없습니다."}
-
-    def generate_report(self):
-        """종합 리포트 생성"""
-        stats = self.get_monitoring_stats()
-        top = self.find_vulnerable_districts(5)
-        now = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-        lines = [
-            f"# 의정활동 감시 리포트",
-            f"생성일시: {now}",
-            "",
-            f"## 전체 현황",
-            f"- 분석 의원: {stats['overview']['total_lawmakers']}명",
-            f"- 평균 취약도: {stats['overview']['average_vulnerability']}점",
-            f"- 공략 가능(70+): {stats['overview']['high_vulnerability']}",
-            f"- 검토 필요(50-69): {stats['overview']['mid_vulnerability']}",
-            f"- 어려움(~49): {stats['overview']['low_vulnerability']}",
-            "",
-            "## Top 5 공략 대상 지역구",
+        # 지역구 의원만 (비례대표 제외)
+        district_lawmakers = [
+            lm for lm in self.lawmakers
+            if lm.get("election_type") != "비례대표" and lm.get("district")
         ]
 
-        for d in top["top_districts"]:
-            lines.append(f"\n### {d['rank']}. {d['district']} ({d['name']}, {d['party']})")
-            lines.append(f"- 취약도: {d['vulnerability_score']}점")
-            lines.append(f"- 승산: {d['win_chance']}")
-            lines.append(f"- 우선순위: {d['priority']}")
-            for wp in d["top_weak_points"]:
-                lines.append(f"  - {wp}")
+        # 법안 발의 수 기준 오름차순 (적은 순서)
+        sorted_lm = sorted(district_lawmakers, key=lambda x: x.get("bills_proposed", 0))
+
+        results = []
+        for rank, lm in enumerate(sorted_lm[:top_n], 1):
+            bills = lm.get("bills_proposed", 0)
+            analysis = self._quick_analysis(lm)
+
+            weak_points = []
+            if bills < 3:
+                weak_points.append(f"법안 발의 극히 저조 ({bills}건)")
+            elif bills < 8:
+                weak_points.append(f"법안 발의 미흡 ({bills}건)")
+
+            reelection = lm.get("reelection", "")
+            if "3선" in reelection or "4선" in reelection or "5선" in reelection:
+                weak_points.append(f"다선 의원 ({reelection}) - 활동 대비 경험")
+
+            results.append({
+                "rank": rank,
+                "mona_cd": lm.get("mona_cd", ""),
+                "name": lm["name"],
+                "party": lm["party"],
+                "district": lm["district"],
+                "bills_proposed": bills,
+                "bill_grade": analysis["bill_grade"],
+                "activity_score": analysis["activity_score"],
+                "weak_points": weak_points,
+                "priority": "최우선" if bills < 3 else ("우선" if bills < 8 else "검토"),
+            })
+
+        return {
+            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "total_district_lawmakers": len(district_lawmakers),
+            "top_vulnerable": results,
+        }
+
+    def get_attack_strategy(self, identifier: str) -> Dict:
+        """해당 의원 공략 전략 생성 (AI 활용)"""
+        detail = self.get_lawmaker_detail(identifier)
+        if "error" in detail:
+            return detail
+
+        lm = detail["lawmaker"]
+        analysis = detail["analysis"]
+
+        # AI로 공략 전략 생성
+        try:
+            from ai_client import ai_call
+            prompt = f"""다음 현역 국회의원의 지역구에 AI 정당이 출마할 전략을 분석해주세요:
+
+현역 의원: {lm['name']}
+정당: {lm['party']}
+지역구: {lm['district']}
+선수: {analysis['term']}
+발의법안: {analysis['bills_proposed']}건 ({analysis['bill_grade']})
+소속위원회: {lm.get('committee', '')}
+
+분석해주세요:
+1. 현역 의원의 약점 (구체적)
+2. AI 정당이 내세울 핵심 정책 3가지
+3. 캠페인 핵심 메시지 1개
+4. 예상 승산 (상/중/하)
+5. 실행 계획 3단계
+
+한국어로 간결하게 답변해주세요."""
+
+            ai_strategy = ai_call(prompt, system="당신은 대한민국 선거 전략 전문 컨설턴트입니다. 데이터 기반으로 분석합니다.", max_tokens=600)
+        except Exception as e:
+            ai_strategy = f"AI 전략 생성 불가: {str(e)}"
+
+        return {
+            "target": {
+                "mona_cd": lm.get("mona_cd", ""),
+                "name": lm["name"],
+                "district": lm["district"],
+                "party": lm["party"],
+                "bills_proposed": analysis["bills_proposed"],
+                "bill_grade": analysis["bill_grade"],
+            },
+            "ai_strategy": ai_strategy,
+            "data_source": "국회 열린데이터 포털",
+            "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+
+    # ==================== 리포트 ====================
+
+    def generate_report(self) -> Dict:
+        """종합 리포트 생성"""
+        stats = self.get_monitoring_stats()
+        if "error" in stats:
+            return stats
+
+        top = self.find_vulnerable_districts(5)
+
+        lines = [
+            "# 의정활동 감시 리포트 v2.0",
+            f"생성일시: {stats['generated_at']}",
+            f"데이터 출처: {stats['data_source']}",
+            "",
+            "## 전체 현황",
+            f"- 분석 의원: {stats['overview']['total_lawmakers']}명",
+            f"- 총 법안 발의: {stats['overview']['total_bills']}건",
+            f"- 의원당 평균: {stats['overview']['avg_bills_per_lawmaker']}건",
+            f"- 최다 발의: {stats['overview']['max_bills']}건",
+            f"- 최소 발의: {stats['overview']['min_bills']}건",
+            "",
+            "## 법안 발의 등급 분포",
+        ]
+        for grade, cnt in stats["grade_distribution"].items():
+            lines.append(f"- {grade}: {cnt}명")
+
+        lines.append("\n## Top 5 의원 (법안 발의)")
+        for lm in stats["top5_lawmakers"]:
+            lines.append(f"- {lm['name']} ({lm['party']}, {lm['district']}): {lm['bills']}건")
+
+        lines.append("\n## Bottom 5 의원 (법안 발의)")
+        for lm in stats["bottom5_lawmakers"]:
+            lines.append(f"- {lm['name']} ({lm['party']}, {lm['district']}): {lm['bills']}건")
+
+        if "top_vulnerable" in top:
+            lines.append("\n## Top 5 공략 대상 지역구")
+            for d in top["top_vulnerable"]:
+                lines.append(f"\n### {d['rank']}. {d['district']} ({d['name']}, {d['party']})")
+                lines.append(f"- 발의 법안: {d['bills_proposed']}건 ({d['bill_grade']})")
+                lines.append(f"- 우선순위: {d['priority']}")
+                for wp in d.get("weak_points", []):
+                    lines.append(f"  - {wp}")
 
         lines.append("\n## 정당별 분석")
         for party, data in stats["by_party"].items():
-            lines.append(f"- {party}: {data['count']}명, 평균 취약도 {data['avg_vulnerability']}점")
-
-        lines.append("\n## 지역별 분석")
-        for region, data in stats["by_region"].items():
-            lines.append(f"- {region}: {data['count']}명 중 취약 {data['vulnerable']}명")
+            lines.append(f"- {party}: {data['count']}명, 평균 {data['avg_bills']}건")
 
         report_text = "\n".join(lines)
 
+        # 저장
         report_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "outputs")
         os.makedirs(report_dir, exist_ok=True)
         report_file = os.path.join(report_dir, f"monitoring_report_{datetime.now().strftime('%Y%m%d')}.md")
-
         with open(report_file, "w", encoding="utf-8") as f:
             f.write(report_text)
 
         return {"report_file": report_file, "content": report_text}
 
 
-# CLI 실행
+# CLI 테스트
 if __name__ == "__main__":
     agent = MonitoringAgent()
 
     print("=" * 60)
-    print("  의정활동감시팀 AI 에이전트")
+    print("  의정활동감시팀 AI v2.0 (국회 API 연동)")
     print("=" * 60)
 
-    # 1. 전체 통계
+    # 데이터 수집
+    print("\n[1] 데이터 수집 중...")
+    result = agent.refresh_data()
+    print(f"  수집 완료: 의원 {result['total_lawmakers']}명")
+
+    # 통계
+    print("\n[2] 전체 통계")
     stats = agent.get_monitoring_stats()
     o = stats["overview"]
-    print(f"\n[전체 현황]")
-    print(f"  분석 의원: {o['total_lawmakers']}명")
-    print(f"  평균 취약도: {o['average_vulnerability']}점")
-    print(f"  공략 가능(70+): {o['high_vulnerability']}")
-    print(f"  검토 필요(50-69): {o['mid_vulnerability']}")
-    print(f"  어려움(~49): {o['low_vulnerability']}")
+    print(f"  의원: {o['total_lawmakers']}명, 총 법안: {o['total_bills']}건, 평균: {o['avg_bills_per_lawmaker']}건")
 
-    # 2. 취약 지역구 Top 10
-    top = agent.find_vulnerable_districts(10)
-    print(f"\n{'=' * 60}")
-    print(f"  Top 10 공략 가능 지역구")
-    print(f"{'=' * 60}")
+    # 취약 지역구
+    print("\n[3] 취약 지역구 Top 5")
+    top = agent.find_vulnerable_districts(5)
+    for d in top.get("top_vulnerable", []):
+        print(f"  {d['rank']}. {d['district']} ({d['name']}, {d['party']}) - {d['bills_proposed']}건 [{d['priority']}]")
 
-    for d in top["top_districts"]:
-        print(f"\n  {d['rank']}. {d['district']} ({d['name']}, {d['party']})")
-        print(f"     취약도: {d['vulnerability_score']}점 | 승산: {d['win_chance']} | {d['priority']}")
-        for wp in d["top_weak_points"]:
-            print(f"     - {wp}")
-
-    # 3. 1위 의원 공략 전략
-    if top["top_districts"]:
-        target_id = top["top_districts"][0]["lawmaker_id"]
-        strategy = agent.get_attack_strategy(target_id)
-        t = strategy["target"]
-        print(f"\n{'=' * 60}")
-        print(f"  공략 전략: {t['name']} ({t['district']})")
-        print(f"{'=' * 60}")
-        print(f"\n  [필요 정책]")
-        for p in strategy["strategy"]["required_policies"]:
-            print(f"    - {p}")
-        print(f"\n  [약점 공략]")
-        for a in strategy["strategy"]["attack_points"]:
-            print(f"    - {a}")
-        print(f"\n  [예상 득표율]")
-        pred = strategy["prediction"]
-        print(f"    AI정당: {pred['ai_party']}")
-        print(f"    현역: {pred['incumbent']}")
-        print(f"    기타: {pred['others']}")
-        print(f"    판정: {pred['verdict']}")
-
-    # 4. 리포트 생성
-    report = agent.generate_report()
-    print(f"\n리포트 저장: {report['report_file']}")
-    print(f"\n{'=' * 60}")
-    print("  완료!")
-    print(f"{'=' * 60}")
+    print("\n완료!")
