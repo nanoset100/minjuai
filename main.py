@@ -662,6 +662,171 @@ async def get_monitoring_report():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ============== 시민 감시관 등급 시스템 ==============
+
+CITIZEN_LEVELS = {
+    1: {"name": "견습 감시자", "icon": "🌱", "min_points": 0},
+    2: {"name": "신입 요원", "icon": "👁️", "min_points": 30},
+    3: {"name": "현장 감시자", "icon": "🔍", "min_points": 100},
+    4: {"name": "정예 감시자", "icon": "⭐", "min_points": 300},
+    5: {"name": "최고 감시자", "icon": "🛡️", "min_points": 1000},
+}
+
+POINT_RULES = {
+    "report": 10,       # 제보 등록
+    "rating": 5,        # 평가 등록
+    "vote_received": 3, # 추천 받음
+    "news_url": 2,      # 뉴스 링크 보너스
+    "photo": 2,         # 사진 첨부 보너스
+}
+
+
+def _calc_level(total_points: int) -> dict:
+    """포인트로 등급 계산"""
+    level = 1
+    for lv, info in CITIZEN_LEVELS.items():
+        if total_points >= info["min_points"]:
+            level = lv
+    info = CITIZEN_LEVELS[level]
+    next_lv = CITIZEN_LEVELS.get(level + 1)
+    return {
+        "level": level,
+        "level_name": info["name"],
+        "icon": info["icon"],
+        "next_level_name": next_lv["name"] if next_lv else None,
+        "next_level_points": next_lv["min_points"] if next_lv else None,
+        "points_to_next": (next_lv["min_points"] - total_points) if next_lv else 0,
+    }
+
+
+def _add_points(user_name: str, action: str, points: int, description: str = ""):
+    """포인트 적립 + 등급 자동 업데이트"""
+    try:
+        # 기존 유저 조회
+        existing = supabase_admin.table("citizen_points").select("*").eq("user_name", user_name).execute()
+
+        if existing.data:
+            user = existing.data[0]
+            new_total = user["total_points"] + points
+            new_reports = user["report_count"] + (1 if action == "report" else 0)
+            new_ratings = user["rating_count"] + (1 if action == "rating" else 0)
+            new_votes = user["vote_received"] + (1 if action == "vote_received" else 0)
+            level_info = _calc_level(new_total)
+
+            supabase_admin.table("citizen_points").update({
+                "total_points": new_total,
+                "level": level_info["level"],
+                "level_name": level_info["level_name"],
+                "report_count": new_reports,
+                "rating_count": new_ratings,
+                "vote_received": new_votes,
+                "updated_at": datetime.now().isoformat(),
+            }).eq("user_name", user_name).execute()
+        else:
+            # 신규 유저
+            level_info = _calc_level(points)
+            supabase_admin.table("citizen_points").insert({
+                "user_name": user_name,
+                "total_points": points,
+                "level": level_info["level"],
+                "level_name": level_info["level_name"],
+                "report_count": 1 if action == "report" else 0,
+                "rating_count": 1 if action == "rating" else 0,
+                "vote_received": 1 if action == "vote_received" else 0,
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat(),
+            }).execute()
+
+        # 활동 로그
+        supabase_admin.table("citizen_point_logs").insert({
+            "user_name": user_name,
+            "action": action,
+            "points": points,
+            "description": description,
+            "created_at": datetime.now().isoformat(),
+        }).execute()
+
+        return True
+    except Exception as e:
+        print(f"[POINTS] 포인트 적립 실패: {e}")
+        return False
+
+
+@app.get("/api/citizen/profile/{user_name}")
+async def get_citizen_profile(user_name: str):
+    """시민 감시관 프로필 조회"""
+    try:
+        result = supabase_admin.table("citizen_points").select("*").eq("user_name", user_name).execute()
+
+        if not result.data:
+            level_info = _calc_level(0)
+            return {
+                "user_name": user_name,
+                "total_points": 0,
+                **level_info,
+                "report_count": 0,
+                "rating_count": 0,
+                "vote_received": 0,
+            }
+
+        user = result.data[0]
+        level_info = _calc_level(user["total_points"])
+        return {
+            "user_name": user["user_name"],
+            "total_points": user["total_points"],
+            **level_info,
+            "report_count": user["report_count"],
+            "rating_count": user["rating_count"],
+            "vote_received": user["vote_received"],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/citizen/leaderboard")
+async def get_leaderboard(limit: int = 20):
+    """시민 감시관 리더보드 (상위 랭킹)"""
+    try:
+        result = supabase_admin.table("citizen_points") \
+            .select("user_name, total_points, level, level_name, report_count, rating_count, vote_received") \
+            .order("total_points", desc=True) \
+            .limit(limit) \
+            .execute()
+
+        leaderboard = []
+        for i, user in enumerate(result.data or []):
+            level_info = _calc_level(user["total_points"])
+            leaderboard.append({
+                "rank": i + 1,
+                "user_name": user["user_name"],
+                "total_points": user["total_points"],
+                "level": level_info["level"],
+                "level_name": level_info["level_name"],
+                "icon": level_info["icon"],
+                "report_count": user["report_count"],
+                "rating_count": user["rating_count"],
+            })
+
+        return {"leaderboard": leaderboard, "total_participants": len(result.data or [])}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/citizen/point-logs/{user_name}")
+async def get_point_logs(user_name: str, limit: int = 30):
+    """포인트 활동 기록 조회"""
+    try:
+        result = supabase_admin.table("citizen_point_logs") \
+            .select("*") \
+            .eq("user_name", user_name) \
+            .order("created_at", desc=True) \
+            .limit(limit) \
+            .execute()
+        return {"logs": result.data or [], "total": len(result.data or [])}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============== 시민 제보 (District Reports) ==============
 
 class DistrictReportRequest(BaseModel):
@@ -750,7 +915,19 @@ async def submit_district_report(req: DistrictReportRequest):
         }
 
         result = supabase_admin.table("district_reports").insert(data).execute()
-        return {"status": "success", "message": "제보가 등록되었습니다!", "report": result.data[0] if result.data else data}
+
+        # 포인트 적립: 제보 +10, 뉴스링크 +2, 사진 +2
+        earned = POINT_RULES["report"]
+        desc = f"제보: {req.title}"
+        if req.news_url:
+            earned += POINT_RULES["news_url"]
+            desc += " (+뉴스링크)"
+        if req.photo_urls:
+            earned += POINT_RULES["photo"]
+            desc += " (+사진)"
+        _add_points(req.user_name or "익명 시민", "report", earned, desc)
+
+        return {"status": "success", "message": f"제보가 등록되었습니다! (+{earned}P)", "report": result.data[0] if result.data else data, "points_earned": earned}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -766,6 +943,15 @@ async def vote_district_report(report_id: str, vote_type: str = "up"):
             raise HTTPException(status_code=404, detail="제보를 찾을 수 없습니다.")
         new_val = current.data[0].get(field, 0) + 1
         supabase_admin.table("district_reports").update({field: new_val}).eq("id", report_id).execute()
+
+        # 추천 받은 제보자에게 포인트 +3 (추천일 때만)
+        if vote_type == "up":
+            report_data = supabase_admin.table("district_reports").select("user_name, title").eq("id", report_id).execute()
+            if report_data.data:
+                author = report_data.data[0].get("user_name", "익명 시민")
+                title = report_data.data[0].get("title", "")
+                _add_points(author, "vote_received", POINT_RULES["vote_received"], f"추천 받음: {title}")
+
         return {"status": "success", "vote_type": vote_type, "new_count": new_val}
     except HTTPException:
         raise
@@ -790,7 +976,11 @@ async def submit_district_rating(req: DistrictRatingRequest):
         }
 
         supabase_admin.table("district_ratings").insert(data).execute()
-        return {"status": "success", "message": "평가가 등록되었습니다!"}
+
+        # 포인트 적립: 평가 +5
+        _add_points(req.user_name or "익명 시민", "rating", POINT_RULES["rating"], f"평가: {req.district} ({req.score}점)")
+
+        return {"status": "success", "message": f"평가가 등록되었습니다! (+{POINT_RULES['rating']}P)"}
     except HTTPException:
         raise
     except Exception as e:
