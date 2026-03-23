@@ -335,7 +335,15 @@ async def join_member(member: MemberJoin):
             ]
         }
     except Exception as e:
-        if "duplicate key" in str(e):
+        if "duplicate key" in str(e) or "unique" in str(e).lower():
+            # 이미 가입된 회원이면 기존 정보 반환
+            existing = supabase_admin.table("members").select("*").eq("email", member.email).execute()
+            if existing.data:
+                return {
+                    "status": "success",
+                    "message": f"{member.name}님, 다시 오셨군요! 환영합니다!",
+                    "member_id": existing.data[0]["id"],
+                }
             raise HTTPException(status_code=400, detail="이미 등록된 이메일입니다.")
         raise HTTPException(status_code=500, detail=str(e))
 
