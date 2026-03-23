@@ -700,6 +700,7 @@ def _calc_level(total_points: int) -> dict:
 
 
 def _add_points(user_name: str, action: str, points: int, description: str = ""):
+    user_name = user_name.strip()
     """포인트 적립 + 등급 자동 업데이트"""
     try:
         # 기존 유저 조회
