@@ -255,6 +255,7 @@ class PolicyProposal(BaseModel):
     category: str
     proposer_name: Optional[str] = None
     proposer_email: Optional[str] = None
+    ontology_tags: Optional[dict] = None  # AI 온톨로지 태그
 
 class MemberJoin(BaseModel):
     name: str
@@ -434,12 +435,16 @@ async def get_policy_detail(proposal_id: str):
 @app.post("/api/policies")
 async def create_policy(proposal: PolicyProposal):
     try:
-        result = supabase_admin.table("proposals").insert({
+        insert_data = {
             "title": proposal.title,
             "description": proposal.description,
             "category": proposal.category,
             "status": "검토중",
-        }).execute()
+        }
+        if proposal.ontology_tags:
+            insert_data["ontology_tags"] = proposal.ontology_tags
+
+        result = supabase_admin.table("proposals").insert(insert_data).execute()
 
         new_proposal = result.data[0]
         return {
@@ -847,6 +852,7 @@ class DistrictReportRequest(BaseModel):
     news_url: Optional[str] = None
     photo_urls: Optional[List[str]] = None
     user_name: Optional[str] = "익명 시민"
+    ontology_tags: Optional[dict] = None  # AI 온톨로지 태그
 
 class DistrictRatingRequest(BaseModel):
     district: str
@@ -917,6 +923,7 @@ async def submit_district_report(req: DistrictReportRequest):
             "news_url": req.news_url,
             "photo_urls": req.photo_urls or [],
             "user_name": req.user_name,
+            "ontology_tags": req.ontology_tags,  # AI 온톨로지 태그
             "upvotes": 0,
             "downvotes": 0,
             "status": "published",
