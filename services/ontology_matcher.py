@@ -9,19 +9,25 @@ import json
 from openai import OpenAI
 from db import supabase_admin
 
-# OpenAI 클라이언트 (외부 검토 Q4 반영: 내장 재시도 사용)
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    max_retries=3,
-    timeout=30.0
-)
+# OpenAI 클라이언트 (지연 초기화 — ai_client.py와 동일 패턴)
+_client = None
+
+def _get_openai_client():
+    global _client
+    if _client is None:
+        _client = OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            max_retries=3,
+            timeout=30.0
+        )
+    return _client
 
 
 # ========== 1. 임베딩 생성 ==========
 
 def create_embedding(text: str) -> list[float]:
     """텍스트를 1536차원 벡터로 변환 (text-embedding-3-small)"""
-    response = client.embeddings.create(
+    response = _get_openai_client().embeddings.create(
         model="text-embedding-3-small",
         input=text
     )
@@ -95,7 +101,7 @@ def match_report_to_nodes(report_title: str, report_content: str, candidate_node
 관련 노드가 없으면: {{"matches": []}}
 """
 
-    response = client.chat.completions.create(
+    response = _get_openai_client().chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.1,
@@ -189,7 +195,7 @@ def add_or_merge_candidate(keyword: str, raw_snippet: str, report_id: str) -> di
 def extract_keyword(title: str, content: str) -> str:
     """미매칭 제보에서 핵심 키워드 추출 (GPT-4o mini)"""
     try:
-        response = client.chat.completions.create(
+        response = _get_openai_client().chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": f"""다음 시민 제보의 핵심 정책 키워드를 하나만 추출하세요.
 예: "교통 체증", "학교 급식", "도로 보수", "주거 비용"
