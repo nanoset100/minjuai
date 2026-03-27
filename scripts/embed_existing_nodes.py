@@ -10,9 +10,15 @@
 import os
 import sys
 import time
+from pathlib import Path
 
 # 프로젝트 루트를 path에 추가
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
+
+# .env 먼저 로드 (OPENAI_API_KEY 필요)
+from dotenv import load_dotenv
+load_dotenv(Path(project_root) / "config" / ".env", override=True)
 
 from db import supabase_admin
 from services.ontology_matcher import create_embedding

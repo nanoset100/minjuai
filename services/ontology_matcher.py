@@ -36,13 +36,19 @@ def find_similar_nodes(text: str, match_count: int = 10, threshold: float = 0.3)
     - pgvector 코사인 유사도 사용
     - Supabase RPC 함수 호출
     """
+    print(f"[ONTOLOGY] 임베딩 생성 중...")
     embedding = create_embedding(text)
+    print(f"[ONTOLOGY] 임베딩 생성 완료 (dim={len(embedding)})")
 
+    print(f"[ONTOLOGY] Supabase RPC 호출 중...")
+    # embedding을 문자열로 변환 (pgvector 호환성)
+    embedding_str = str(embedding)
     result = supabase_admin.rpc("match_ontology_nodes", {
-        "query_embedding": embedding,
+        "query_embedding": embedding_str,
         "match_threshold": threshold,
         "match_count": match_count
     }).execute()
+    print(f"[ONTOLOGY] RPC 완료: {len(result.data or [])}개 결과")
 
     return result.data or []
 
@@ -224,8 +230,14 @@ async def process_report_ontology(report_id: str, title: str, content: str):
             return
 
         # Step 2: pgvector Top 10 후보 검색
+        print(f"[ONTOLOGY] Step 2 시작: 임베딩 생성 중... {report_id}")
         combined_text = f"{title} {content}"
-        candidates = find_similar_nodes(combined_text, match_count=10, threshold=0.3)
+        try:
+            candidates = find_similar_nodes(combined_text, match_count=10, threshold=0.3)
+            print(f"[ONTOLOGY] Step 2 완료: 후보 {len(candidates)}개 발견")
+        except Exception as e2:
+            print(f"[ONTOLOGY] Step 2 실패 (pgvector 검색): {type(e2).__name__}: {e2}")
+            raise
 
         # Step 3: GPT-4o mini 최종 매칭
         if candidates:
