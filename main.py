@@ -1337,27 +1337,36 @@ async def get_ontology_map():
 async def test_ontology_match(text: str = "노인 복지관 부족"):
     """온톨로지 매칭 진단 엔드포인트 (디버깅용)"""
     steps = {}
+
+    # Test A: ai_client.py 클라이언트로 chat 테스트
     try:
-        # Step 1: 임베딩 생성
+        from ai_client import get_client
+        c = get_client()
+        r = c.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": "답변: OK"}],
+            max_tokens=5
+        )
+        steps["ai_client_chat"] = f"OK: {r.choices[0].message.content}"
+    except Exception as e:
+        steps["ai_client_chat"] = f"FAIL: {type(e).__name__}: {e}"
+
+    # Test B: ai_client.py 클라이언트로 임베딩 테스트
+    try:
+        from ai_client import get_client
+        c = get_client()
+        r = c.embeddings.create(model="text-embedding-3-small", input=text)
+        steps["ai_client_embed"] = f"OK (dim={len(r.data[0].embedding)})"
+    except Exception as e:
+        steps["ai_client_embed"] = f"FAIL: {type(e).__name__}: {e}"
+
+    # Test C: ontology_matcher 클라이언트로 임베딩 테스트
+    try:
         from services.ontology_matcher import create_embedding
         embedding = create_embedding(text)
-        steps["embedding"] = f"OK (dim={len(embedding)})"
+        steps["matcher_embed"] = f"OK (dim={len(embedding)})"
     except Exception as e:
-        steps["embedding"] = f"FAIL: {type(e).__name__}: {e}"
-        return {"steps": steps}
-
-    try:
-        # Step 2: RPC 호출
-        embedding_str = str(embedding)
-        result = supabase_admin.rpc("match_ontology_nodes", {
-            "query_embedding": embedding_str,
-            "match_threshold": 0.3,
-            "match_count": 5
-        }).execute()
-        steps["rpc"] = f"OK ({len(result.data or [])} results)"
-        steps["matches"] = [{"name": r["name"], "similarity": r["similarity"]} for r in (result.data or [])]
-    except Exception as e:
-        steps["rpc"] = f"FAIL: {type(e).__name__}: {e}"
+        steps["matcher_embed"] = f"FAIL: {type(e).__name__}: {e}"
 
     return {"steps": steps}
 
