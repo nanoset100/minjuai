@@ -1333,44 +1333,6 @@ async def get_ontology_map():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/ontology/test-match")
-async def test_ontology_match(text: str = "노인 복지관 부족"):
-    """온톨로지 매칭 진단 엔드포인트 (디버깅용)"""
-    steps = {}
-
-    # Test A: support_agent의 클라이언트 (확실히 작동하는 것)
-    try:
-        r = support_agent.client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "OK라고만 답변해"}],
-            max_tokens=5
-        )
-        steps["support_agent_chat"] = f"OK: {r.choices[0].message.content}"
-    except Exception as e:
-        steps["support_agent_chat"] = f"FAIL: {type(e).__name__}: {e}"
-
-    # Test B: support_agent 클라이언트로 임베딩
-    try:
-        r = support_agent.client.embeddings.create(model="text-embedding-3-small", input=text)
-        steps["support_agent_embed"] = f"OK (dim={len(r.data[0].embedding)})"
-    except Exception as e:
-        steps["support_agent_embed"] = f"FAIL: {type(e).__name__}: {e}"
-
-    # Test C: ontology_matcher 클라이언트
-    try:
-        from services.ontology_matcher import create_embedding
-        embedding = create_embedding(text)
-        steps["matcher_embed"] = f"OK (dim={len(embedding)})"
-    except Exception as e:
-        steps["matcher_embed"] = f"FAIL: {type(e).__name__}: {e}"
-
-    # Test D: OPENAI_API_KEY 환경변수 확인
-    key = os.getenv("OPENAI_API_KEY", "")
-    steps["api_key_info"] = f"len={len(key)}, starts={key[:10]}..., has_whitespace={key != key.strip()}"
-
-    return {"steps": steps}
-
-
 @app.get("/api/ontology/search")
 async def search_ontology(q: str):
     """온톨로지 검색"""
