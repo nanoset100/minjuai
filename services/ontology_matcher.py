@@ -208,7 +208,7 @@ def extract_keyword(title: str, content: str) -> str:
 
 # ========== 7. 전체 매칭 파이프라인 ==========
 
-async def process_report_ontology(report_id: str, title: str, content: str):
+def process_report_ontology(report_id: str, title: str, content: str):
     """
     제보 등록 후 백그라운드에서 실행되는 전체 매칭 파이프라인
 

@@ -1333,6 +1333,35 @@ async def get_ontology_map():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/ontology/test-match")
+async def test_ontology_match(text: str = "노인 복지관 부족"):
+    """온톨로지 매칭 진단 엔드포인트 (디버깅용)"""
+    steps = {}
+    try:
+        # Step 1: 임베딩 생성
+        from services.ontology_matcher import create_embedding
+        embedding = create_embedding(text)
+        steps["embedding"] = f"OK (dim={len(embedding)})"
+    except Exception as e:
+        steps["embedding"] = f"FAIL: {type(e).__name__}: {e}"
+        return {"steps": steps}
+
+    try:
+        # Step 2: RPC 호출
+        embedding_str = str(embedding)
+        result = supabase_admin.rpc("match_ontology_nodes", {
+            "query_embedding": embedding_str,
+            "match_threshold": 0.3,
+            "match_count": 5
+        }).execute()
+        steps["rpc"] = f"OK ({len(result.data or [])} results)"
+        steps["matches"] = [{"name": r["name"], "similarity": r["similarity"]} for r in (result.data or [])]
+    except Exception as e:
+        steps["rpc"] = f"FAIL: {type(e).__name__}: {e}"
+
+    return {"steps": steps}
+
+
 @app.get("/api/ontology/search")
 async def search_ontology(q: str):
     """온톨로지 검색"""
