@@ -4,7 +4,7 @@ AI 정당 웹 백엔드 API
 FastAPI 기반 + Supabase 연동
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -27,6 +27,8 @@ from agents.marketing_agent import MarketingAgent
 from agents.batch_helper import BatchHelper
 from agents.policy_research_agent import PolicyResearchAgent
 from db import supabase_admin
+from dependencies import verify_admin
+from services.ontology_matcher import process_report_ontology
 
 # FastAPI 앱
 app = FastAPI(
@@ -903,8 +905,8 @@ async def get_district_reports(district: str):
 
 
 @app.post("/api/districts/report")
-async def submit_district_report(req: DistrictReportRequest):
-    """시민 제보 등록"""
+async def submit_district_report(req: DistrictReportRequest, background_tasks: BackgroundTasks):
+    """시민 제보 등록 + 백그라운드 온톨로지 매칭"""
     try:
         log_agent_activity("시민감시단", "제보 접수", f"{req.district} - {req.title}")
 
@@ -920,10 +922,12 @@ async def submit_district_report(req: DistrictReportRequest):
             "upvotes": 0,
             "downvotes": 0,
             "status": "published",
+            "ontology_status": "pending",
             "created_at": datetime.now().isoformat(),
         }
 
         result = supabase_admin.table("district_reports").insert(data).execute()
+        report_id = result.data[0]["id"] if result.data else None
 
         # 포인트 적립: 제보 +10, 뉴스링크 +2, 사진 +2
         earned = POINT_RULES["report"]
@@ -936,7 +940,14 @@ async def submit_district_report(req: DistrictReportRequest):
             desc += " (+사진)"
         _add_points(req.user_name or "익명 시민", "report", earned, desc)
 
-        return {"status": "success", "message": f"제보가 등록되었습니다! (+{earned}P)", "report": result.data[0] if result.data else data, "points_earned": earned}
+        # 백그라운드 온톨로지 매칭 (사용자는 즉시 응답 받음)
+        if report_id:
+            background_tasks.add_task(
+                process_report_ontology,
+                report_id, req.title, req.content
+            )
+
+        return {"status": "success", "message": f"제보가 등록되었습니다! (+{earned}P)", "report": result.data[0] if result.data else data, "points_earned": earned, "ontology_status": "pending"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -1328,6 +1339,171 @@ async def search_ontology(q: str):
     try:
         nodes = supabase_admin.table("ontology_nodes").select("*").ilike("name", f"%{q}%").execute()
         return {"results": nodes.data or [], "total": len(nodes.data or [])}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============== 온톨로지 매칭 엔드포인트 (Phase 2) ==============
+
+@app.get("/api/districts/report/{report_id}/ontology")
+async def get_report_ontology(report_id: str):
+    """특정 제보와 연결된 온톨로지 노드 조회"""
+    try:
+        links = supabase_admin.table("report_node_links") \
+            .select("*, ontology_nodes(id, type, name, description)") \
+            .eq("report_id", report_id) \
+            .order("relevance", desc=True) \
+            .execute()
+
+        report_status = supabase_admin.table("district_reports") \
+            .select("ontology_status") \
+            .eq("id", report_id) \
+            .execute()
+
+        status = report_status.data[0]["ontology_status"] if report_status.data else "unknown"
+
+        return {
+            "report_id": report_id,
+            "ontology_status": status,
+            "linked_nodes": links.data or [],
+            "total_links": len(links.data or [])
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ontology/node/{node_id}/reports")
+async def get_node_reports(node_id: str):
+    """특정 온톨로지 노드와 연결된 제보 목록 (양방향 조회)"""
+    try:
+        links = supabase_admin.table("report_node_links") \
+            .select("*, district_reports(id, district, title, content, created_at)") \
+            .eq("node_id", node_id) \
+            .order("relevance", desc=True) \
+            .execute()
+
+        return {
+            "node_id": node_id,
+            "related_reports": links.data or [],
+            "total_reports": len(links.data or [])
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/districts/report/{report_id}/verify-match")
+async def verify_report_match(report_id: str, node_id: str, is_correct: bool = True):
+    """시민이 AI 매칭 결과를 검증 (upvotes/downvotes)"""
+    try:
+        current = supabase_admin.table("report_node_links") \
+            .select("verify_upvotes, verify_downvotes") \
+            .eq("report_id", report_id) \
+            .eq("node_id", node_id) \
+            .execute()
+
+        if not current.data:
+            raise HTTPException(status_code=404, detail="매칭 기록 없음")
+
+        if is_correct:
+            new_count = (current.data[0].get("verify_upvotes", 0) or 0) + 1
+            supabase_admin.table("report_node_links") \
+                .update({
+                    "verify_upvotes": new_count,
+                    "last_verified_at": datetime.now().isoformat()
+                }) \
+                .eq("report_id", report_id) \
+                .eq("node_id", node_id) \
+                .execute()
+            return {"status": "verified", "verify_upvotes": new_count}
+        else:
+            new_count = (current.data[0].get("verify_downvotes", 0) or 0) + 1
+            supabase_admin.table("report_node_links") \
+                .update({
+                    "verify_downvotes": new_count,
+                    "last_verified_at": datetime.now().isoformat()
+                }) \
+                .eq("report_id", report_id) \
+                .eq("node_id", node_id) \
+                .execute()
+            return {"status": "rejected", "verify_downvotes": new_count}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/ontology/stats")
+async def get_ontology_stats():
+    """온톨로지 시스템 모니터링 통계"""
+    try:
+        total = supabase_admin.table("district_reports") \
+            .select("id", count="exact").execute()
+        matched = supabase_admin.table("district_reports") \
+            .select("id", count="exact") \
+            .eq("ontology_status", "matched").execute()
+        unmatched = supabase_admin.table("district_reports") \
+            .select("id", count="exact") \
+            .eq("ontology_status", "unmatched").execute()
+        pending = supabase_admin.table("district_reports") \
+            .select("id", count="exact") \
+            .eq("ontology_status", "pending").execute()
+
+        links = supabase_admin.table("report_node_links") \
+            .select("relevance, verify_upvotes").execute()
+        link_data = links.data or []
+        avg_relevance = sum(l["relevance"] for l in link_data) / max(len(link_data), 1)
+        verified_links = [l for l in link_data if (l.get("verify_upvotes") or 0) > 0]
+
+        candidates = supabase_admin.table("node_candidates") \
+            .select("id", count="exact") \
+            .eq("status", "pending").execute()
+
+        nodes = supabase_admin.table("ontology_nodes") \
+            .select("id", count="exact").execute()
+        edges = supabase_admin.table("ontology_edges") \
+            .select("id", count="exact").execute()
+
+        total_count = total.count or 0
+        matched_count = matched.count or 0
+
+        return {
+            "total_reports": total_count,
+            "matched": matched_count,
+            "unmatched": unmatched.count or 0,
+            "pending": pending.count or 0,
+            "match_rate": round(matched_count / max(total_count, 1) * 100, 1),
+            "avg_relevance": round(avg_relevance, 3),
+            "verification_rate": round(len(verified_links) / max(len(link_data), 1) * 100, 1),
+            "pending_candidates": candidates.count or 0,
+            "total_nodes": nodes.count or 0,
+            "total_edges": edges.count or 0
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/ontology/retry-pending")
+async def retry_pending_matches(background_tasks: BackgroundTasks, admin=Depends(verify_admin)):
+    """1시간 이상 pending 상태인 제보 재매칭 (관리자 전용, 외부 검토 Q6 반영)"""
+    try:
+        cutoff = (datetime.now() - timedelta(hours=1)).isoformat()
+
+        stale = supabase_admin.table("district_reports") \
+            .select("id, title, content") \
+            .eq("ontology_status", "pending") \
+            .lt("created_at", cutoff) \
+            .execute()
+
+        count = 0
+        for report in (stale.data or []):
+            background_tasks.add_task(
+                process_report_ontology,
+                report["id"], report["title"], report["content"]
+            )
+            count += 1
+
+        return {"status": "success", "retried": count}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
