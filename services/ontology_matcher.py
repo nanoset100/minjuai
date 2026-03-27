@@ -15,8 +15,9 @@ _client = None
 def _get_openai_client():
     global _client
     if _client is None:
+        api_key = os.getenv("OPENAI_API_KEY", "").strip()
         _client = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY"),
+            api_key=api_key,
             max_retries=3,
             timeout=30.0
         )

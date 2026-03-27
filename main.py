@@ -1338,35 +1338,35 @@ async def test_ontology_match(text: str = "노인 복지관 부족"):
     """온톨로지 매칭 진단 엔드포인트 (디버깅용)"""
     steps = {}
 
-    # Test A: ai_client.py 클라이언트로 chat 테스트
+    # Test A: support_agent의 클라이언트 (확실히 작동하는 것)
     try:
-        from ai_client import get_client
-        c = get_client()
-        r = c.chat.completions.create(
+        r = support_agent.client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[{"role": "user", "content": "답변: OK"}],
+            messages=[{"role": "user", "content": "OK라고만 답변해"}],
             max_tokens=5
         )
-        steps["ai_client_chat"] = f"OK: {r.choices[0].message.content}"
+        steps["support_agent_chat"] = f"OK: {r.choices[0].message.content}"
     except Exception as e:
-        steps["ai_client_chat"] = f"FAIL: {type(e).__name__}: {e}"
+        steps["support_agent_chat"] = f"FAIL: {type(e).__name__}: {e}"
 
-    # Test B: ai_client.py 클라이언트로 임베딩 테스트
+    # Test B: support_agent 클라이언트로 임베딩
     try:
-        from ai_client import get_client
-        c = get_client()
-        r = c.embeddings.create(model="text-embedding-3-small", input=text)
-        steps["ai_client_embed"] = f"OK (dim={len(r.data[0].embedding)})"
+        r = support_agent.client.embeddings.create(model="text-embedding-3-small", input=text)
+        steps["support_agent_embed"] = f"OK (dim={len(r.data[0].embedding)})"
     except Exception as e:
-        steps["ai_client_embed"] = f"FAIL: {type(e).__name__}: {e}"
+        steps["support_agent_embed"] = f"FAIL: {type(e).__name__}: {e}"
 
-    # Test C: ontology_matcher 클라이언트로 임베딩 테스트
+    # Test C: ontology_matcher 클라이언트
     try:
         from services.ontology_matcher import create_embedding
         embedding = create_embedding(text)
         steps["matcher_embed"] = f"OK (dim={len(embedding)})"
     except Exception as e:
         steps["matcher_embed"] = f"FAIL: {type(e).__name__}: {e}"
+
+    # Test D: OPENAI_API_KEY 환경변수 확인
+    key = os.getenv("OPENAI_API_KEY", "")
+    steps["api_key_info"] = f"len={len(key)}, starts={key[:10]}..., has_whitespace={key != key.strip()}"
 
     return {"steps": steps}
 
