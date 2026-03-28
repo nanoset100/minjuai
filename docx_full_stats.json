@@ -1,0 +1,331 @@
+{
+  "stages": [
+    "[1단계] '경제' 대분류 실제 시민 이슈 (총 34건)",
+    "[3단계] '생활' 대분류 실제 시민 이슈 (총 40건)"
+  ],
+  "total_topics": 52,
+  "total_issues": 82,
+  "total_policies": 146,
+  "total_items": 228,
+  "sources": {
+    "청원": 29,
+    "뉴스": 72,
+    "시민단체": 22,
+    "연구": 13,
+    "주민참여예산": 20
+  },
+  "topics_summary": [
+    {
+      "name": "1. 경제·일자리 (총 5건 확인됨)",
+      "issues": 2,
+      "policies": 3,
+      "total": 5
+    },
+    {
+      "name": "2. 중소기업·소상공인 (총 6건 확인됨)",
+      "issues": 3,
+      "policies": 3,
+      "total": 6
+    },
+    {
+      "name": "3. 부동산·주거 (총 6건 확인됨)",
+      "issues": 3,
+      "policies": 3,
+      "total": 6
+    },
+    {
+      "name": "4. 금융·세제 (총 7건 확인됨)",
+      "issues": 3,
+      "policies": 4,
+      "total": 7
+    },
+    {
+      "name": "5. 디지털·AI (총 5건 확인됨)",
+      "issues": 3,
+      "policies": 2,
+      "total": 5
+    },
+    {
+      "name": "6. 에너지·자원 (총 5건 확인됨)",
+      "issues": 2,
+      "policies": 3,
+      "total": 5
+    },
+    {
+      "name": "7. 교육 (총 4건 확인됨)",
+      "issues": 2,
+      "policies": 2,
+      "total": 4
+    },
+    {
+      "name": "8. 청년 (총 4건 확인됨)",
+      "issues": 2,
+      "policies": 2,
+      "total": 4
+    },
+    {
+      "name": "9. 고령화·노인 (총 5건 확인됨)",
+      "issues": 2,
+      "policies": 3,
+      "total": 5
+    },
+    {
+      "name": "10. 저출생·육아 (총 4건 확인됨)",
+      "issues": 1,
+      "policies": 3,
+      "total": 4
+    },
+    {
+      "name": "11. 의료·건강 (총 5건 확인됨)",
+      "issues": 3,
+      "policies": 2,
+      "total": 5
+    },
+    {
+      "name": "12. 복지 (총 4건 확인됨)",
+      "issues": 2,
+      "policies": 2,
+      "total": 4
+    },
+    {
+      "name": "13. 노동·근로 (총 4건 확인됨)",
+      "issues": 2,
+      "policies": 2,
+      "total": 4
+    },
+    {
+      "name": "14. 여성·평등 (총 3건 확인됨)",
+      "issues": 1,
+      "policies": 2,
+      "total": 3
+    },
+    {
+      "name": "15. 이민·다문화 (총 4건 확인됨)",
+      "issues": 2,
+      "policies": 2,
+      "total": 4
+    },
+    {
+      "name": "16. 장애인·소수자 (총 4건 확인됨)",
+      "issues": 2,
+      "policies": 2,
+      "total": 4
+    },
+    {
+      "name": "17. 문화·예술 (총 4건 확인됨)",
+      "issues": 2,
+      "policies": 2,
+      "total": 4
+    },
+    {
+      "name": "18. 스포츠·체육 (총 3건 확인됨)",
+      "issues": 1,
+      "policies": 2,
+      "total": 3
+    },
+    {
+      "name": "19. 소비자·물가 (총 5건 확인됨)",
+      "issues": 3,
+      "policies": 2,
+      "total": 5
+    },
+    {
+      "name": "20. 관광 (총 5건 확인됨)",
+      "issues": 1,
+      "policies": 4,
+      "total": 5
+    },
+    {
+      "name": "21. 반려동물·동물복지 (총 5건 확인됨)",
+      "issues": 3,
+      "policies": 2,
+      "total": 5
+    },
+    {
+      "name": "22. 식품·안전 (총 5건 확인됨)",
+      "issues": 1,
+      "policies": 4,
+      "total": 5
+    },
+    {
+      "name": "23. 주민자치·참여 (총 5건 확인됨)",
+      "issues": 1,
+      "policies": 4,
+      "total": 5
+    },
+    {
+      "name": "24. 가족·사회구조 (총 5건 확인됨)",
+      "issues": 2,
+      "policies": 3,
+      "total": 5
+    },
+    {
+      "name": "25. 중독·정신건강 (총 3건 확인됨) ※출처 내 관련 이슈 최대 추출",
+      "issues": 1,
+      "policies": 2,
+      "total": 3
+    },
+    {
+      "name": "26. 통신·인터넷 (총 5건 확인됨)",
+      "issues": 2,
+      "policies": 3,
+      "total": 5
+    },
+    {
+      "name": "27. 유산·전통 (총 3건 확인됨) ※출처 내 관련 이슈 최대 추출",
+      "issues": 1,
+      "policies": 2,
+      "total": 3
+    },
+    {
+      "name": "28. 통일 대비 (총 0건 확인됨)",
+      "issues": 0,
+      "policies": 0,
+      "total": 0
+    },
+    {
+      "name": "29. 행정·공공 (총 5건 확인됨)",
+      "issues": 2,
+      "policies": 3,
+      "total": 5
+    },
+    {
+      "name": "30. 선거·정치개혁 (총 6건 확인됨)",
+      "issues": 5,
+      "policies": 1,
+      "total": 6
+    },
+    {
+      "name": "31. 미디어·언론 (총 2건 확인됨) ※출처 내 관련 이슈 최대 추출",
+      "issues": 1,
+      "policies": 1,
+      "total": 2
+    },
+    {
+      "name": "32. 외교·통일 (총 4건 확인됨) ※출처 내 관련 이슈 최대 추출",
+      "issues": 2,
+      "policies": 2,
+      "total": 4
+    },
+    {
+      "name": "33. 국방·안보 (총 4건 확인됨) ※출처 내 관련 이슈 최대 추출",
+      "issues": 2,
+      "policies": 2,
+      "total": 4
+    },
+    {
+      "name": "34. 법·사법 (총 5건 확인됨)",
+      "issues": 3,
+      "policies": 2,
+      "total": 5
+    },
+    {
+      "name": "35. 지방분권·균형발전 (총 4건 확인됨) ※출처 내 관련 이슈 최대 추출",
+      "issues": 2,
+      "policies": 2,
+      "total": 4
+    },
+    {
+      "name": "36. 부패·투명성 (총 3건 확인됨) ※출처 내 관련 이슈 최대 추출",
+      "issues": 1,
+      "policies": 2,
+      "total": 3
+    },
+    {
+      "name": "37. 농업·어업 (총 4건 확인됨)",
+      "issues": 0,
+      "policies": 4,
+      "total": 4
+    },
+    {
+      "name": "38. 재난·안전 (총 6건 확인됨)",
+      "issues": 2,
+      "policies": 4,
+      "total": 6
+    },
+    {
+      "name": "39. 과학·기술 (총 4건 확인됨)",
+      "issues": 0,
+      "policies": 4,
+      "total": 4
+    },
+    {
+      "name": "40. 도시·건축 (총 5건 확인됨)",
+      "issues": 0,
+      "policies": 5,
+      "total": 5
+    },
+    {
+      "name": "41. 해양·영토 (총 5건 확인됨)",
+      "issues": 0,
+      "policies": 5,
+      "total": 5
+    },
+    {
+      "name": "42. 산림·생태 (총 5건 확인됨)",
+      "issues": 0,
+      "policies": 5,
+      "total": 5
+    },
+    {
+      "name": "43. 기후변화·환경 (총 5건 확인됨)",
+      "issues": 0,
+      "policies": 5,
+      "total": 5
+    },
+    {
+      "name": "44. 교통 (총 9건 확인됨)",
+      "issues": 3,
+      "policies": 6,
+      "total": 9
+    },
+    {
+      "name": "45. 인공지능·로봇 (총 6건 확인됨)",
+      "issues": 1,
+      "policies": 5,
+      "total": 6
+    },
+    {
+      "name": "46. 사이버보안 (총 3건 확인됨)",
+      "issues": 2,
+      "policies": 1,
+      "total": 3
+    },
+    {
+      "name": "47. 자율주행·모빌리티 (총 5건 확인됨)",
+      "issues": 1,
+      "policies": 4,
+      "total": 5
+    },
+    {
+      "name": "48. 양자컴퓨팅 (총 0건 확인됨)",
+      "issues": 0,
+      "policies": 0,
+      "total": 0
+    },
+    {
+      "name": "49. 메타버스·XR (총 2건 확인됨)",
+      "issues": 0,
+      "policies": 2,
+      "total": 2
+    },
+    {
+      "name": "50. 블록체인·핀테크 (총 7건 확인됨)",
+      "issues": 2,
+      "policies": 5,
+      "total": 7
+    },
+    {
+      "name": "51. 우주·항공 (총 2건 확인됨)",
+      "issues": 0,
+      "policies": 2,
+      "total": 2
+    },
+    {
+      "name": "52. 바이오·생명 (총 4건 확인됨)",
+      "issues": 0,
+      "policies": 4,
+      "total": 4
+    }
+  ]
+}

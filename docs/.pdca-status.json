@@ -1,11 +1,17 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-03-22T09:19:22.578Z",
+  "lastUpdated": "2026-03-28T12:17:13.378Z",
   "activeFeatures": [
     "test017AI_Party_claudecode",
     "agents",
     "minjuai",
-    "migrations"
+    "migrations",
+    "server",
+    "docs",
+    "고향마켓",
+    "박우량군수자료",
+    "gohyang_market",
+    "scripts"
   ],
   "primaryFeature": "test017AI_Party_claudecode",
   "features": {
@@ -18,9 +24,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-22T00:01:12.412Z",
-        "lastUpdated": "2026-03-22T09:14:30.189Z"
+        "lastUpdated": "2026-03-27T08:03:40.238Z"
       },
-      "lastFile": "M:\\MyProject777\\test017AI_Party_claudecode\\ai_client.py"
+      "lastFile": "M:\\MyProject777\\test017AI_Party_claudecode\\main.py"
     },
     "agents": {
       "phase": "do",
@@ -31,9 +37,9 @@
       "documents": {},
       "timestamps": {
         "started": "2026-03-22T00:02:14.899Z",
-        "lastUpdated": "2026-03-22T09:19:22.578Z"
+        "lastUpdated": "2026-03-22T22:58:16.325Z"
       },
-      "lastFile": "M:\\MyProject777\\test017AI_Party_claudecode\\agents\\batch_helper.py"
+      "lastFile": "M:\\MyProject777\\test017AI_Party_claudecode\\agents\\assembly_collector.py"
     },
     "minjuai": {
       "phase": "do",
@@ -60,6 +66,84 @@
         "lastUpdated": "2026-03-22T05:09:05.281Z"
       },
       "lastFile": "M:/MyProject777/test017AI_Party_claudecode/migrations/execute_migration.py"
+    },
+    "server": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-23T04:47:32.639Z",
+        "lastUpdated": "2026-03-23T05:16:17.209Z"
+      },
+      "lastFile": "M:\\MyProject777\\logosflow\\server\\main.py"
+    },
+    "docs": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-23T08:40:55.625Z",
+        "lastUpdated": "2026-03-23T08:40:55.625Z"
+      },
+      "lastFile": "M:\\MyProject777\\gohyang_market\\docs\\generate_pdf.py"
+    },
+    "고향마켓": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-23T11:41:11.538Z",
+        "lastUpdated": "2026-03-23T11:42:31.534Z"
+      },
+      "lastFile": "M:\\디지털작업방\\고향마켓\\create_pptx.js"
+    },
+    "박우량군수자료": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-24T00:21:21.778Z",
+        "lastUpdated": "2026-03-24T00:24:42.528Z"
+      },
+      "lastFile": "M:\\디지털작업방\\박우량군수자료\\generate_pptx.js"
+    },
+    "gohyang_market": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-24T06:14:52.596Z",
+        "lastUpdated": "2026-03-24T06:45:16.323Z"
+      },
+      "lastFile": "M:/MyProject777/gohyang_market/generate_splash.py"
+    },
+    "scripts": {
+      "phase": "do",
+      "phaseNumber": 3,
+      "matchRate": null,
+      "iterationCount": 0,
+      "requirements": [],
+      "documents": {},
+      "timestamps": {
+        "started": "2026-03-27T06:43:20.709Z",
+        "lastUpdated": "2026-03-28T12:17:13.378Z"
+      },
+      "lastFile": "M:\\MyProject777\\test017AI_Party_claudecode\\scripts\\import_ontology_from_docx.py"
     }
   },
   "pipeline": {
@@ -70,7 +154,7 @@
   "session": {
     "startedAt": "2026-02-03T00:47:29.609Z",
     "onboardingCompleted": false,
-    "lastActivity": "2026-03-22T09:19:22.578Z"
+    "lastActivity": "2026-03-28T12:17:13.378Z"
   },
   "history": [
     {
@@ -346,6 +430,486 @@
     {
       "timestamp": "2026-03-22T09:19:22.578Z",
       "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:31:18.896Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:33:28.996Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:33:29.583Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:33:30.716Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:33:55.820Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:33:59.751Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:34:08.656Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:34:11.704Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:39:43.259Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:40:06.547Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:40:13.481Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:40:21.112Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:40:46.363Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:41:11.762Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:50:36.534Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T09:50:55.236Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T10:59:25.871Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T12:31:37.744Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T12:32:59.451Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T12:33:24.887Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T12:33:44.320Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T12:33:45.085Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T12:33:46.789Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T12:33:47.222Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T13:54:47.422Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T14:16:17.440Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T22:40:37.849Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T22:40:50.021Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-22T22:58:16.325Z",
+      "feature": "agents",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T00:11:30.514Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T00:11:38.324Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T00:11:45.244Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T00:11:52.016Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T00:53:03.566Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T01:04:43.130Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T04:47:32.639Z",
+      "feature": "server",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T04:47:52.657Z",
+      "feature": "server",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T04:48:02.383Z",
+      "feature": "server",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T04:48:10.033Z",
+      "feature": "server",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T04:48:16.091Z",
+      "feature": "server",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T05:16:12.602Z",
+      "feature": "server",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T05:16:17.209Z",
+      "feature": "server",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T08:40:55.625Z",
+      "feature": "docs",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T11:41:11.538Z",
+      "feature": "고향마켓",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-23T11:42:31.534Z",
+      "feature": "고향마켓",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-24T00:21:21.778Z",
+      "feature": "박우량군수자료",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-24T00:24:16.550Z",
+      "feature": "박우량군수자료",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-24T00:24:19.627Z",
+      "feature": "박우량군수자료",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-24T00:24:24.633Z",
+      "feature": "박우량군수자료",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-24T00:24:31.425Z",
+      "feature": "박우량군수자료",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-24T00:24:36.475Z",
+      "feature": "박우량군수자료",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-24T00:24:42.528Z",
+      "feature": "박우량군수자료",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-24T06:14:52.596Z",
+      "feature": "gohyang_market",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-24T06:45:16.323Z",
+      "feature": "gohyang_market",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-25T11:18:18.481Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-25T11:18:25.908Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-25T11:18:47.662Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-25T11:18:54.007Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-25T12:00:03.416Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T06:42:17.319Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T06:42:22.134Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T06:43:06.299Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T06:43:20.709Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T06:43:33.034Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T06:43:49.600Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T06:44:26.613Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T06:44:51.210Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T06:56:30.309Z",
+      "feature": "scripts",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T07:25:25.983Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T07:25:38.076Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T07:32:20.696Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T07:34:10.359Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T07:38:02.304Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T07:38:09.565Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T07:38:13.845Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T07:42:34.669Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T07:47:57.250Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T07:48:13.880Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-27T08:03:40.238Z",
+      "feature": "test017AI_Party_claudecode",
+      "phase": "do",
+      "action": "updated"
+    },
+    {
+      "timestamp": "2026-03-28T12:17:13.378Z",
+      "feature": "scripts",
       "phase": "do",
       "action": "updated"
     }
