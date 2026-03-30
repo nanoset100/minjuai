@@ -1321,7 +1321,9 @@ async def get_policy_solution(request: SolutionRequest):
 async def get_ontology_map():
     """전체 온톨로지 지식 그래프"""
     try:
-        nodes = supabase_admin.table("ontology_nodes").select("*").execute()
+        nodes = supabase_admin.table("ontology_nodes").select(
+            "id, type, name, description, category, data, country, source_url, created_at"
+        ).execute()
         edges = supabase_admin.table("ontology_edges").select("*").execute()
         return {
             "nodes": nodes.data or [],
