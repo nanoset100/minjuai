@@ -1435,6 +1435,54 @@ async def verify_report_match(report_id: str, node_id: str, is_correct: bool = T
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/api/districts/report/{report_id}/select-issue")
+async def select_report_issue(report_id: str, node_id: str = None):
+    """시민이 AI 추천 중 직접 이슈를 선택 (citizen_selected=true)"""
+    try:
+        if node_id:
+            # 기존 AI 매칭 중 시민이 선택한 것을 citizen_selected=true로 표시
+            existing = supabase_admin.table("report_node_links") \
+                .select("id") \
+                .eq("report_id", report_id) \
+                .eq("node_id", node_id) \
+                .execute()
+
+            if existing.data:
+                # AI가 이미 매칭한 노드 → citizen_selected 표시
+                supabase_admin.table("report_node_links") \
+                    .update({
+                        "citizen_selected": True,
+                        "last_verified_at": datetime.now().isoformat()
+                    }) \
+                    .eq("report_id", report_id) \
+                    .eq("node_id", node_id) \
+                    .execute()
+            else:
+                # AI가 매칭 안 한 노드를 시민이 직접 선택 → 새 링크 생성
+                supabase_admin.table("report_node_links") \
+                    .insert({
+                        "report_id": report_id,
+                        "node_id": node_id,
+                        "relevance": 1.0,
+                        "matched_by": "citizen",
+                        "citizen_selected": True,
+                        "last_verified_at": datetime.now().isoformat()
+                    }) \
+                    .execute()
+
+            return {"status": "selected", "node_id": node_id}
+        else:
+            # "해당 없음" 선택
+            supabase_admin.table("district_reports") \
+                .update({"ontology_status": "citizen_none"}) \
+                .eq("id", report_id) \
+                .execute()
+            return {"status": "none_selected"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.get("/api/ontology/stats")
 async def get_ontology_stats():
     """온톨로지 시스템 모니터링 통계"""
