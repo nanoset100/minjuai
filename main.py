@@ -1349,7 +1349,7 @@ async def search_ontology(q: str):
 
 @app.get("/api/districts/report/{report_id}/ontology")
 async def get_report_ontology(report_id: str):
-    """특정 제보와 연결된 온톨로지 노드 조회"""
+    """특정 제보와 연결된 온톨로지 노드 조회 (+ 노드별 시민 참여자 수)"""
     try:
         links = supabase_admin.table("report_node_links") \
             .select("*, ontology_nodes(id, type, name, description)") \
@@ -1364,11 +1364,29 @@ async def get_report_ontology(report_id: str):
 
         status = report_status.data[0]["ontology_status"] if report_status.data else "unknown"
 
+        # Phase 2: 각 노드별 시민 참여자 수 (citizen_selected=true 카운트)
+        linked_nodes = links.data or []
+        node_ids = [l["node_id"] for l in linked_nodes if l.get("node_id")]
+        participant_counts = {}
+        if node_ids:
+            for nid in set(node_ids):
+                cnt = supabase_admin.table("report_node_links") \
+                    .select("id", count="exact") \
+                    .eq("node_id", nid) \
+                    .eq("citizen_selected", True) \
+                    .execute()
+                participant_counts[nid] = cnt.count or 0
+
+        # 각 링크에 participants 필드 추가
+        for link in linked_nodes:
+            nid = link.get("node_id")
+            link["participants"] = participant_counts.get(nid, 0)
+
         return {
             "report_id": report_id,
             "ontology_status": status,
-            "linked_nodes": links.data or [],
-            "total_links": len(links.data or [])
+            "linked_nodes": linked_nodes,
+            "total_links": len(linked_nodes)
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -1470,7 +1488,13 @@ async def select_report_issue(report_id: str, node_id: str = None):
                     }) \
                     .execute()
 
-            return {"status": "selected", "node_id": node_id}
+            # 해당 노드의 총 시민 참여자 수 반환
+            cnt = supabase_admin.table("report_node_links") \
+                .select("id", count="exact") \
+                .eq("node_id", node_id) \
+                .eq("citizen_selected", True) \
+                .execute()
+            return {"status": "selected", "node_id": node_id, "participants": cnt.count or 0}
         else:
             # "해당 없음" 선택
             supabase_admin.table("district_reports") \
