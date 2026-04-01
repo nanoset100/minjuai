@@ -28,7 +28,7 @@ from agents.batch_helper import BatchHelper
 from agents.policy_research_agent import PolicyResearchAgent
 from db import supabase_admin
 from dependencies import verify_admin, verify_app
-from services.ontology_matcher import process_report_ontology
+from services.ontology_matcher import process_report_ontology, add_or_merge_candidate
 
 # FastAPI 앱
 app = FastAPI(
@@ -1537,6 +1537,151 @@ async def select_report_issue(report_id: str, node_id: str = None, _=Depends(ver
                 .execute()
             return {"status": "none_selected"}
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============== Strategy Phase 4: 새 이슈 제안 ==============
+
+class SuggestIssueRequest(BaseModel):
+    keyword: str          # 시민이 제안하는 이슈 키워드 (예: "전세사기")
+    description: str = "" # 선택: 상세 설명
+
+
+@app.post("/api/districts/report/{report_id}/suggest-issue")
+async def suggest_new_issue(report_id: str, req: SuggestIssueRequest, _=Depends(verify_app)):
+    """시민이 새 이슈를 직접 제안 (258개 기존 이슈에 없을 때)
+
+    Strategy Phase 4: "해당 없음" 선택 후 새 이슈 제안
+    - node_candidates에 저장 (pgvector 중복 방지 포함)
+    - 같은 키워드 제안 시 count 증가 (연대 효과)
+    - 제보 상태를 citizen_suggested로 업데이트
+    """
+    try:
+        keyword = req.keyword.strip()
+        if not keyword or len(keyword) < 2:
+            raise HTTPException(status_code=400, detail="이슈 키워드는 2자 이상이어야 합니다")
+        if len(keyword) > 100:
+            raise HTTPException(status_code=400, detail="이슈 키워드는 100자 이하로 입력해주세요")
+
+        # 제보 존재 확인
+        report = supabase_admin.table("district_reports") \
+            .select("id, title, content") \
+            .eq("id", report_id) \
+            .execute()
+        if not report.data:
+            raise HTTPException(status_code=404, detail="제보를 찾을 수 없습니다")
+
+        # node_candidates에 추가 (중복이면 count 증가)
+        raw_snippet = req.description or report.data[0].get("content", "")
+        result = add_or_merge_candidate(keyword, raw_snippet, report_id)
+
+        # 제보 상태 업데이트
+        supabase_admin.table("district_reports") \
+            .update({"ontology_status": "citizen_suggested"}) \
+            .eq("id", report_id) \
+            .execute()
+
+        # 같은 키워드 제안자 수 조회
+        if result.get("candidate_id"):
+            candidate = supabase_admin.table("node_candidates") \
+                .select("report_count") \
+                .eq("id", result["candidate_id"]) \
+                .execute()
+            suggest_count = candidate.data[0]["report_count"] if candidate.data else 1
+        else:
+            suggest_count = 1
+
+        return {
+            "status": "suggested",
+            "keyword": keyword,
+            "action": result.get("action"),  # "created" or "merged"
+            "suggest_count": suggest_count,  # 같은 이슈 제안자 수
+            "message": f"'{keyword}' 이슈가 제안되었습니다! ({suggest_count}명 제안)"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/issues/suggested")
+async def get_suggested_issues():
+    """시민 제안 이슈 목록 (인기순 정렬)
+
+    node_candidates 중 pending 상태를 report_count 내림차순으로 반환
+    - 많은 시민이 제안할수록 상위 노출
+    - 관리자가 승인하면 정식 온톨로지 노드로 전환 가능
+    """
+    try:
+        result = supabase_admin.table("node_candidates") \
+            .select("id, keyword, report_count, status, created_at, updated_at") \
+            .eq("status", "pending") \
+            .order("report_count", desc=True) \
+            .limit(50) \
+            .execute()
+
+        return {
+            "suggested_issues": result.data or [],
+            "total": len(result.data or [])
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/admin/issues/{candidate_id}/approve")
+async def approve_suggested_issue(candidate_id: str, category: str = "기타", admin=Depends(verify_admin)):
+    """관리자: 시민 제안 이슈를 정식 온톨로지 노드로 승인
+
+    node_candidates → ontology_nodes로 승격
+    - 카테고리 지정 가능 (기본: 기타)
+    - 승인 후 해당 키워드의 임베딩으로 새 노드 생성
+    """
+    try:
+        # 후보 조회
+        candidate = supabase_admin.table("node_candidates") \
+            .select("*") \
+            .eq("id", candidate_id) \
+            .execute()
+        if not candidate.data:
+            raise HTTPException(status_code=404, detail="제안 이슈를 찾을 수 없습니다")
+
+        cand = candidate.data[0]
+        if cand["status"] != "pending":
+            raise HTTPException(status_code=400, detail=f"이미 처리된 제안입니다 (상태: {cand['status']})")
+
+        # ontology_nodes에 새 노드 생성
+        new_node = supabase_admin.table("ontology_nodes") \
+            .insert({
+                "type": "issue",
+                "name": cand["keyword"],
+                "description": cand.get("raw_text_snippet", ""),
+                "category": category,
+                "embedding": cand.get("embedding"),
+            }) \
+            .execute()
+
+        new_node_id = new_node.data[0]["id"] if new_node.data else None
+
+        # 후보 상태 업데이트
+        supabase_admin.table("node_candidates") \
+            .update({
+                "status": "node_created",
+                "created_node_id": new_node_id,
+                "updated_at": datetime.now().isoformat()
+            }) \
+            .eq("id", candidate_id) \
+            .execute()
+
+        return {
+            "status": "approved",
+            "new_node_id": new_node_id,
+            "keyword": cand["keyword"],
+            "category": category,
+            "message": f"'{cand['keyword']}' 이슈가 정식 등록되었습니다!"
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
