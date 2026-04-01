@@ -27,7 +27,7 @@ from agents.marketing_agent import MarketingAgent
 from agents.batch_helper import BatchHelper
 from agents.policy_research_agent import PolicyResearchAgent
 from db import supabase_admin
-from dependencies import verify_admin
+from dependencies import verify_admin, verify_app
 from services.ontology_matcher import process_report_ontology
 
 # FastAPI 앱
@@ -70,6 +70,39 @@ async def startup_load_data():
             print(f"[STARTUP] 캐시된 국회 데이터 사용: {len(monitoring_agent.lawmakers)}명")
     except Exception as e:
         print(f"[STARTUP] 국회 데이터 로드 실패 (수동 refresh 필요): {e}")
+
+
+@app.on_event("startup")
+async def startup_retry_stuck_matching():
+    """서버 시작 시 유실된 매칭 작업 자동 재처리 (외부 리뷰 반영)
+
+    Railway 재배포/재시작 시 BackgroundTasks에서 처리 중이던
+    온톨로지 매칭이 유실될 수 있음. pending 상태로 10분 이상
+    방치된 제보를 자동 재매칭.
+    """
+    try:
+        cutoff = (datetime.now() - timedelta(minutes=10)).isoformat()
+        stuck = supabase_admin.table("district_reports") \
+            .select("id, title, content") \
+            .eq("ontology_status", "pending") \
+            .lt("created_at", cutoff) \
+            .execute()
+
+        stuck_reports = stuck.data or []
+        if stuck_reports:
+            print(f"[STARTUP] 유실된 매칭 {len(stuck_reports)}건 재처리 시작...")
+            for report in stuck_reports:
+                try:
+                    process_report_ontology(
+                        report["id"], report["title"], report["content"]
+                    )
+                except Exception as match_err:
+                    print(f"[STARTUP] 재매칭 실패 {report['id']}: {match_err}")
+            print(f"[STARTUP] 유실 매칭 재처리 완료")
+        else:
+            print("[STARTUP] 유실된 매칭 없음")
+    except Exception as e:
+        print(f"[STARTUP] 유실 매칭 확인 실패: {e}")
 
 
 # ============== 에이전트 활동 로그 시스템 ==============
@@ -905,7 +938,7 @@ async def get_district_reports(district: str):
 
 
 @app.post("/api/districts/report")
-async def submit_district_report(req: DistrictReportRequest, background_tasks: BackgroundTasks):
+async def submit_district_report(req: DistrictReportRequest, background_tasks: BackgroundTasks, _=Depends(verify_app)):
     """시민 제보 등록 + 백그라운드 온톨로지 매칭"""
     try:
         log_agent_activity("시민감시단", "제보 접수", f"{req.district} - {req.title}")
@@ -953,7 +986,7 @@ async def submit_district_report(req: DistrictReportRequest, background_tasks: B
 
 
 @app.post("/api/districts/report/{report_id}/vote")
-async def vote_district_report(report_id: str, vote_type: str = "up"):
+async def vote_district_report(report_id: str, vote_type: str = "up", _=Depends(verify_app)):
     """시민 제보 공감/비공감"""
     try:
         field = "upvotes" if vote_type == "up" else "downvotes"
@@ -980,7 +1013,7 @@ async def vote_district_report(report_id: str, vote_type: str = "up"):
 
 
 @app.post("/api/districts/rating")
-async def submit_district_rating(req: DistrictRatingRequest):
+async def submit_district_rating(req: DistrictRatingRequest, _=Depends(verify_app)):
     """의원 시민 평점 등록"""
     try:
         if not 1 <= req.score <= 5:
@@ -1364,18 +1397,19 @@ async def get_report_ontology(report_id: str):
 
         status = report_status.data[0]["ontology_status"] if report_status.data else "unknown"
 
-        # Phase 2: 각 노드별 시민 참여자 수 (citizen_selected=true 카운트)
+        # Phase 2: 각 노드별 시민 참여자 수 (IN 쿼리 1번으로 — N+1 해결)
         linked_nodes = links.data or []
-        node_ids = [l["node_id"] for l in linked_nodes if l.get("node_id")]
+        node_ids = list(set(l["node_id"] for l in linked_nodes if l.get("node_id")))
         participant_counts = {}
         if node_ids:
-            for nid in set(node_ids):
-                cnt = supabase_admin.table("report_node_links") \
-                    .select("id", count="exact") \
-                    .eq("node_id", nid) \
-                    .eq("citizen_selected", True) \
-                    .execute()
-                participant_counts[nid] = cnt.count or 0
+            all_selected = supabase_admin.table("report_node_links") \
+                .select("node_id") \
+                .in_("node_id", node_ids) \
+                .eq("citizen_selected", True) \
+                .execute()
+            for row in (all_selected.data or []):
+                nid = row["node_id"]
+                participant_counts[nid] = participant_counts.get(nid, 0) + 1
 
         # 각 링크에 participants 필드 추가
         for link in linked_nodes:
@@ -1412,7 +1446,7 @@ async def get_node_reports(node_id: str):
 
 
 @app.post("/api/districts/report/{report_id}/verify-match")
-async def verify_report_match(report_id: str, node_id: str, is_correct: bool = True):
+async def verify_report_match(report_id: str, node_id: str, is_correct: bool = True, _=Depends(verify_app)):
     """시민이 AI 매칭 결과를 검증 (upvotes/downvotes)"""
     try:
         current = supabase_admin.table("report_node_links") \
@@ -1454,7 +1488,7 @@ async def verify_report_match(report_id: str, node_id: str, is_correct: bool = T
 
 
 @app.post("/api/districts/report/{report_id}/select-issue")
-async def select_report_issue(report_id: str, node_id: str = None):
+async def select_report_issue(report_id: str, node_id: str = None, _=Depends(verify_app)):
     """시민이 AI 추천 중 직접 이슈를 선택 (citizen_selected=true)"""
     try:
         if node_id:
@@ -1566,11 +1600,12 @@ async def get_heatmap_issues(category: Optional[str] = None):
     - category 파라미터로 특정 카테고리 필터링 가능
     """
     try:
-        # 1) report_node_links + district_reports + ontology_nodes 조인
+        # 1) report_node_links + district_reports + ontology_nodes 조인 (limit 적용)
         query = supabase_admin.table("report_node_links") \
             .select("node_id, citizen_selected, relevance, "
                     "district_reports(id, district), "
-                    "ontology_nodes(id, name, category)")
+                    "ontology_nodes(id, name, category)") \
+            .limit(1000)
 
         if category:
             query = query.eq("ontology_nodes.category", category)
@@ -1656,11 +1691,17 @@ async def get_heatmap_region_detail(region: str):
     해당 지역 내 이슈별 제보 수, 참여자 수, 최근 제보 목록
     """
     try:
+        # ilike 와일드카드 방어: 특수문자 제거
+        safe_region = region.replace("%", "").replace("_", "").strip()
+        if not safe_region:
+            raise HTTPException(status_code=400, detail="유효하지 않은 지역명")
+
         # 해당 지역 제보 조회 (district가 region으로 시작하는 것)
         reports = supabase_admin.table("district_reports") \
             .select("id, district, title, created_at") \
-            .ilike("district", f"{region}%") \
+            .ilike("district", f"{safe_region}%") \
             .order("created_at", desc=True) \
+            .limit(500) \
             .execute()
 
         report_ids = [r["id"] for r in (reports.data or [])]
