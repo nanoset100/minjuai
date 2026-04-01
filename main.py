@@ -1557,6 +1557,165 @@ async def get_ontology_stats():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/heatmap/issues")
+async def get_heatmap_issues(category: Optional[str] = None):
+    """이슈별 지역 히트맵 데이터 (시/도 단위 집계)
+
+    Strategy Phase 3: 어떤 이슈가 어떤 지역에서 뜨거운지 시각화
+    - citizen_selected 우선, AI 매칭도 포함
+    - category 파라미터로 특정 카테고리 필터링 가능
+    """
+    try:
+        # 1) report_node_links + district_reports + ontology_nodes 조인
+        query = supabase_admin.table("report_node_links") \
+            .select("node_id, citizen_selected, relevance, "
+                    "district_reports(id, district), "
+                    "ontology_nodes(id, name, category)")
+
+        if category:
+            query = query.eq("ontology_nodes.category", category)
+
+        result = query.execute()
+        links = result.data or []
+
+        # 2) 시/도별, 이슈별 집계
+        regions = {}  # {region: {node_name: count}}
+        issue_stats = {}  # {node_name: {category, count, regions: set}}
+
+        for link in links:
+            report = link.get("district_reports")
+            node = link.get("ontology_nodes")
+            if not report or not node:
+                continue
+
+            district = report.get("district", "")
+            if not district:
+                continue
+            region = district.split()[0]  # "서울 영등포구을" → "서울"
+
+            node_name = node.get("name", "")
+            node_category = node.get("category", "기타")
+            if not node_name:
+                continue
+
+            # category 필터 (Supabase 조인 필터 보완)
+            if category and node_category != category:
+                continue
+
+            # 시/도별 집계
+            if region not in regions:
+                regions[region] = {"total": 0, "issues": {}}
+            regions[region]["total"] += 1
+            regions[region]["issues"][node_name] = \
+                regions[region]["issues"].get(node_name, 0) + 1
+
+            # 이슈별 통계
+            if node_name not in issue_stats:
+                issue_stats[node_name] = {
+                    "name": node_name,
+                    "category": node_category,
+                    "count": 0,
+                    "citizen_count": 0,
+                    "regions": set()
+                }
+            issue_stats[node_name]["count"] += 1
+            if link.get("citizen_selected"):
+                issue_stats[node_name]["citizen_count"] += 1
+            issue_stats[node_name]["regions"].add(region)
+
+        # 3) top_issues 정렬 (시민 선택 우선, 건수 내림차순)
+        top_issues = sorted(
+            issue_stats.values(),
+            key=lambda x: (x["citizen_count"], x["count"]),
+            reverse=True
+        )
+        for issue in top_issues:
+            issue["regions"] = sorted(issue["regions"])
+
+        # 4) 카테고리 목록
+        categories = sorted(set(
+            i["category"] for i in top_issues if i["category"]
+        ))
+
+        return {
+            "regions": regions,
+            "top_issues": top_issues[:20],
+            "categories": categories,
+            "total_reports": sum(r["total"] for r in regions.values()),
+            "total_regions": len(regions),
+            "filter": {"category": category}
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/heatmap/region/{region}")
+async def get_heatmap_region_detail(region: str):
+    """특정 시/도의 이슈 상세 분포
+
+    해당 지역 내 이슈별 제보 수, 참여자 수, 최근 제보 목록
+    """
+    try:
+        # 해당 지역 제보 조회 (district가 region으로 시작하는 것)
+        reports = supabase_admin.table("district_reports") \
+            .select("id, district, title, created_at") \
+            .ilike("district", f"{region}%") \
+            .order("created_at", desc=True) \
+            .execute()
+
+        report_ids = [r["id"] for r in (reports.data or [])]
+        if not report_ids:
+            return {
+                "region": region,
+                "issues": [],
+                "recent_reports": [],
+                "total_reports": 0
+            }
+
+        # 해당 제보들의 이슈 연결 조회
+        links = supabase_admin.table("report_node_links") \
+            .select("node_id, citizen_selected, relevance, report_id, "
+                    "ontology_nodes(id, name, category)") \
+            .in_("report_id", report_ids) \
+            .execute()
+
+        # 이슈별 집계
+        issues = {}
+        for link in (links.data or []):
+            node = link.get("ontology_nodes")
+            if not node:
+                continue
+            node_name = node.get("name", "")
+            if not node_name:
+                continue
+
+            if node_name not in issues:
+                issues[node_name] = {
+                    "name": node_name,
+                    "category": node.get("category", "기타"),
+                    "count": 0,
+                    "citizen_count": 0
+                }
+            issues[node_name]["count"] += 1
+            if link.get("citizen_selected"):
+                issues[node_name]["citizen_count"] += 1
+
+        sorted_issues = sorted(
+            issues.values(),
+            key=lambda x: (x["citizen_count"], x["count"]),
+            reverse=True
+        )
+
+        return {
+            "region": region,
+            "issues": sorted_issues,
+            "recent_reports": (reports.data or [])[:10],
+            "total_reports": len(report_ids)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/ontology/retry-pending")
 async def retry_pending_matches(background_tasks: BackgroundTasks, admin=Depends(verify_admin)):
     """1시간 이상 pending 상태인 제보 재매칭 (관리자 전용, 외부 검토 Q6 반영)"""
