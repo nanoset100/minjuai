@@ -27,7 +27,7 @@ from agents.marketing_agent import MarketingAgent
 from agents.batch_helper import BatchHelper
 from agents.policy_research_agent import PolicyResearchAgent
 from db import supabase_admin
-from dependencies import verify_admin, verify_app
+from dependencies import verify_admin, verify_app, verify_user
 from services.ontology_matcher import process_report_ontology, add_or_merge_candidate
 
 # FastAPI 앱
@@ -938,7 +938,7 @@ async def get_district_reports(district: str):
 
 
 @app.post("/api/districts/report")
-async def submit_district_report(req: DistrictReportRequest, background_tasks: BackgroundTasks, _=Depends(verify_app)):
+async def submit_district_report(req: DistrictReportRequest, background_tasks: BackgroundTasks, user=Depends(verify_user)):
     """시민 제보 등록 + 백그라운드 온톨로지 매칭"""
     try:
         log_agent_activity("시민감시단", "제보 접수", f"{req.district} - {req.title}")
@@ -986,7 +986,7 @@ async def submit_district_report(req: DistrictReportRequest, background_tasks: B
 
 
 @app.post("/api/districts/report/{report_id}/vote")
-async def vote_district_report(report_id: str, vote_type: str = "up", _=Depends(verify_app)):
+async def vote_district_report(report_id: str, vote_type: str = "up", user=Depends(verify_user)):
     """시민 제보 공감/비공감"""
     try:
         field = "upvotes" if vote_type == "up" else "downvotes"
@@ -1013,7 +1013,7 @@ async def vote_district_report(report_id: str, vote_type: str = "up", _=Depends(
 
 
 @app.post("/api/districts/rating")
-async def submit_district_rating(req: DistrictRatingRequest, _=Depends(verify_app)):
+async def submit_district_rating(req: DistrictRatingRequest, user=Depends(verify_user)):
     """의원 시민 평점 등록"""
     try:
         if not 1 <= req.score <= 5:
@@ -1446,7 +1446,7 @@ async def get_node_reports(node_id: str):
 
 
 @app.post("/api/districts/report/{report_id}/verify-match")
-async def verify_report_match(report_id: str, node_id: str, is_correct: bool = True, _=Depends(verify_app)):
+async def verify_report_match(report_id: str, node_id: str, is_correct: bool = True, user=Depends(verify_user)):
     """시민이 AI 매칭 결과를 검증 (upvotes/downvotes)"""
     try:
         current = supabase_admin.table("report_node_links") \
@@ -1488,7 +1488,7 @@ async def verify_report_match(report_id: str, node_id: str, is_correct: bool = T
 
 
 @app.post("/api/districts/report/{report_id}/select-issue")
-async def select_report_issue(report_id: str, node_id: str = None, _=Depends(verify_app)):
+async def select_report_issue(report_id: str, node_id: str = None, user=Depends(verify_user)):
     """시민이 AI 추천 중 직접 이슈를 선택 (citizen_selected=true)"""
     try:
         if node_id:
@@ -1549,7 +1549,7 @@ class SuggestIssueRequest(BaseModel):
 
 
 @app.post("/api/districts/report/{report_id}/suggest-issue")
-async def suggest_new_issue(report_id: str, req: SuggestIssueRequest, _=Depends(verify_app)):
+async def suggest_new_issue(report_id: str, req: SuggestIssueRequest, user=Depends(verify_user)):
     """시민이 새 이슈를 직접 제안 (258개 기존 이슈에 없을 때)
 
     Strategy Phase 4: "해당 없음" 선택 후 새 이슈 제안
