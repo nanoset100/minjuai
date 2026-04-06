@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from openai import OpenAI
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from loguru import logger
 
@@ -35,7 +35,7 @@ class SupportAgent:
     CACHE_MAX_SIZE = 200       # 최대 캐시 항목 수
 
     def __init__(self):
-        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
+        self.client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
         self.model = "gpt-4o-mini"
         self.party_name = os.getenv("PARTY_NAME", "민주AI")
 
@@ -281,7 +281,7 @@ AI가 정치인을 대체하는 것이 아니라,
         messages.append({"role": "user", "content": user_message})
 
         try:
-            response = self.client.chat.completions.create(
+            response = await self.client.chat.completions.create(
                 model=self.model,
                 max_tokens=1000,
                 messages=messages,
