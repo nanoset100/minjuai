@@ -10,3 +10,4 @@ loguru==0.7.3
 apscheduler==3.11.2
 requests==2.32.4
 PyJWT==2.9.0
+feedparser==6.0.11

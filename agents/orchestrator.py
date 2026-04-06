@@ -20,6 +20,7 @@ from loguru import logger
 from agents.marketing_agent import MarketingAgent
 from agents.analytics_agent import AnalyticsAgent
 from agents.batch_helper import BatchHelper
+from agents.issue_man_agent import IssueManAgent
 
 # 환경 변수 로드
 load_dotenv(Path(__file__).parent.parent / "config" / ".env")
@@ -68,6 +69,10 @@ class AIPartyOrchestrator:
 
         # Batch API 헬퍼 초기화 (weekly_strategy 50% 비용 절감)
         self.batch_helper = BatchHelper()
+
+        # 이슈맨 AI 초기화 (뉴스 자동 수집)
+        self.issue_man_agent = IssueManAgent()
+        self.agents['issue_man'] = self.issue_man_agent
 
         logger.info("🤖 AI 정당 오케스트레이터 초기화 완료")
     
@@ -167,6 +172,24 @@ class AIPartyOrchestrator:
             hour=22,
             minute=0,
             id='weekly_analytics_report'
+        )
+
+        # 매일 오전 8시 - 이슈맨 AI 뉴스 수집 (1차)
+        self.scheduler.add_job(
+            self.run_issue_man,
+            'cron',
+            hour=8,
+            minute=30,
+            id='issue_man_morning'
+        )
+
+        # 매일 오후 6시 - 이슈맨 AI 뉴스 수집 (2차)
+        self.scheduler.add_job(
+            self.run_issue_man,
+            'cron',
+            hour=18,
+            minute=0,
+            id='issue_man_evening'
         )
 
         # 매주 일요일 21시 - 주간 전략 Batch 사전 제출 (50% 비용 절감)
@@ -421,6 +444,18 @@ class AIPartyOrchestrator:
         except Exception as e:
             logger.error(f"❌ 주간 분석 리포트 생성 실패: {e}")
             return None
+
+    async def run_issue_man(self):
+        """이슈맨 AI 실행 - 뉴스 자동 수집 및 시민제보 등록"""
+        logger.info("🗞️ 이슈맨 AI 실행")
+        try:
+            from db import get_db
+            db = get_db()
+            result = await self.issue_man_agent.run(db)
+            self.save_task_log('issue_man', result)
+            logger.info(f"🗞️ 이슈맨 완료: {result}")
+        except Exception as e:
+            logger.error(f"❌ 이슈맨 실행 오류: {e}")
 
     async def update_basic_stats(self) -> Dict[str, Any]:
         """기본 통계 업데이트"""

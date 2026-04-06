@@ -2096,6 +2096,41 @@ async def debug_env():
     }
 
 
+# ============== 이슈맨 AI ==============
+
+@app.post("/api/issue-man/run")
+async def run_issue_man_now(user=Depends(verify_user)):
+    """이슈맨 AI 수동 실행 (관리자용)"""
+    try:
+        from agents.issue_man_agent import IssueManAgent
+        agent = IssueManAgent()
+        result = await agent.run(supabase_admin)
+        return {"success": True, "result": result}
+    except Exception as e:
+        logger.error(f"이슈맨 수동 실행 오류: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/issue-man/stats")
+async def get_issue_man_stats():
+    """이슈맨 AI 최근 등록 현황"""
+    try:
+        result = (
+            supabase_admin.table("district_reports")
+            .select("id, district, title, created_at")
+            .eq("user_name", "이슈맨AI")
+            .order("created_at", desc=True)
+            .limit(20)
+            .execute()
+        )
+        return {
+            "recent_reports": result.data,
+            "total_count": len(result.data),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============== 정적 파일 서빙 (웹 프론트엔드) ==============
 
 @app.get("/manifest.json")
