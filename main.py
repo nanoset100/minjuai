@@ -923,16 +923,49 @@ async def get_districts():
 
 
 @app.get("/api/districts/{district}/reports")
-async def get_district_reports(district: str):
-    """특정 지역구 시민 제보 목록"""
+async def get_district_reports(district: str, source: str = "citizen"):
+    """
+    특정 지역구 제보 목록
+    - source=citizen  : 실제 시민 제보만 (기본값)
+    - source=ai_news  : 이슈맨AI 수집 뉴스만
+    - source=all      : 전체
+    """
     try:
-        result = supabase_admin.table("district_reports") \
+        query = supabase_admin.table("district_reports") \
             .select("*") \
             .eq("district", district) \
             .order("created_at", desc=True) \
-            .limit(50) \
-            .execute()
-        return {"district": district, "reports": result.data, "total": len(result.data)}
+            .limit(50)
+
+        if source != "all":
+            query = query.eq("source_type", source)
+
+        result = query.execute()
+        return {"district": district, "reports": result.data, "total": len(result.data), "source": source}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/news-feed")
+async def get_news_feed(district: str = None, limit: int = 20):
+    """
+    이슈맨AI 뉴스 피드 (앱 뉴스 탭용)
+    - district 미지정: 전국 뉴스
+    - district 지정: 해당 지역구 뉴스
+    """
+    try:
+        query = supabase_admin.table("district_reports") \
+            .select("id, district, title, content, news_url, created_at") \
+            .eq("source_type", "ai_news") \
+            .eq("status", "published") \
+            .order("created_at", desc=True) \
+            .limit(min(limit, 50))
+
+        if district:
+            query = query.eq("district", district)
+
+        result = query.execute()
+        return {"news": result.data, "total": len(result.data), "district": district or "전국"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -955,6 +988,7 @@ async def submit_district_report(req: DistrictReportRequest, background_tasks: B
             "upvotes": 0,
             "downvotes": 0,
             "status": "published",
+            "source_type": "citizen",       # 실제 시민 제보 명시
             "ontology_status": "pending",
             "created_at": datetime.now().isoformat(),
         }

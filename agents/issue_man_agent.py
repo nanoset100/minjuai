@@ -307,7 +307,6 @@ district는 반드시 후보 목록 중 가장 관련 높은 것을 선택하세
     async def save_to_db(self, db, report: Dict) -> bool:
         """district_reports 테이블에 저장"""
         try:
-            # 지역구 인덱스에서 mona_cd 즉시 조회 (DB 추가 호출 없음)
             mona_cd = self._get_mona_cd(report["district"])
 
             data = {
@@ -318,6 +317,7 @@ district는 반드시 후보 목록 중 가장 관련 높은 것을 선택하세
                 "content": report["content"],
                 "news_url": report.get("news_url"),
                 "user_name": "이슈맨AI",
+                "source_type": "ai_news",   # 시민 제보와 분리
                 "status": "published",
             }
 
@@ -325,7 +325,13 @@ district는 반드시 후보 목록 중 가장 관련 높은 것을 선택하세
             if result.data:
                 logger.info(f"✅ 등록: [{report['district']}] {report['title'][:30]}")
                 return True
+
         except Exception as e:
+            err = str(e)
+            # news_url unique 제약 위반 = 이미 등록된 기사 → 스킵 (에러 아님)
+            if "idx_reports_news_url_unique" in err or "unique" in err.lower():
+                logger.debug(f"⏭️ 중복 스킵: {report.get('news_url', '')[:60]}")
+                return False
             logger.error(f"DB 저장 실패: {e}")
         return False
 
