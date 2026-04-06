@@ -923,7 +923,7 @@ async def get_districts():
 
 
 @app.get("/api/districts/{district}/reports")
-async def get_district_reports(district: str, source: str = "citizen"):
+async def get_district_reports(district: str, source: str = "all"):
     """
     특정 지역구 제보 목록
     - source=citizen  : 실제 시민 제보만 (기본값)
