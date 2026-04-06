@@ -955,7 +955,7 @@ async def get_news_feed(district: str = None, limit: int = 20):
     """
     try:
         query = supabase_admin.table("district_reports") \
-            .select("id, district, title, content, news_url, created_at") \
+            .select("id, district, title, content, news_url, source_type, created_at") \
             .eq("source_type", "ai_news") \
             .eq("status", "published") \
             .order("created_at", desc=True) \
