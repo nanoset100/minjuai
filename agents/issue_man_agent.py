@@ -62,29 +62,58 @@ RSS_SOURCES = [
     },
 ]
 
-# ─── 지역구 키워드 매핑 (빠른 1차 필터) ───────────────────────────────
-DISTRICT_KEYWORDS = {
-    "서울특별시": ["서울", "종로", "중구", "용산", "성동", "광진", "동대문", "중랑", "성북", "강북",
-                  "도봉", "노원", "은평", "서대문", "마포", "양천", "강서", "구로", "금천",
-                  "영등포", "동작", "관악", "서초", "강남", "송파", "강동"],
-    "부산광역시": ["부산", "해운대", "수영", "남구", "북구", "사하", "사상", "금정", "동래", "연제"],
-    "인천광역시": ["인천", "남동", "연수", "미추홀", "부평", "계양", "서구"],
-    "대구광역시": ["대구", "달서", "달성", "수성", "북구", "동구"],
-    "광주광역시": ["광주", "서구", "북구", "남구", "동구"],
-    "대전광역시": ["대전", "서구", "유성", "대덕", "동구"],
-    "울산광역시": ["울산", "남구", "북구", "동구", "중구"],
-    "경기도": ["경기", "수원", "성남", "고양", "용인", "부천", "안산", "남양주", "화성", "안양",
-               "평택", "의정부", "파주", "시흥", "김포", "광명", "광주", "하남", "오산"],
-    "경상남도": ["경남", "창원", "김해", "진주", "양산", "통영", "거제"],
-    "경상북도": ["경북", "포항", "구미", "경주", "안동", "칠곡"],
-    "전라남도": ["전남", "순천", "여수", "목포", "광양"],
-    "전라북도": ["전북", "전주", "익산", "군산", "정읍"],
-    "충청남도": ["충남", "천안", "아산", "당진", "서산"],
-    "충청북도": ["충북", "청주", "충주", "제천"],
-    "강원도": ["강원", "춘천", "원주", "강릉", "속초"],
-    "제주특별자치도": ["제주", "서귀포"],
-    "세종특별자치시": ["세종"],
+# ─── 광역 단위 약칭 매핑 (1차 빠른 필터용) ──────────────────────────────
+REGION_ABBREV = {
+    "서울": "서울", "부산": "부산", "인천": "인천", "대구": "대구",
+    "광주": "광주", "대전": "대전", "울산": "울산", "세종": "세종",
+    "경기": "경기", "강원": "강원", "충북": "충북", "충남": "충남",
+    "전북": "전북", "전남": "전남", "경북": "경북", "경남": "경남",
+    "제주": "제주",
 }
+
+
+def build_district_index(lawmakers_path: Path) -> Dict[str, List[Dict]]:
+    """
+    실제 의원 데이터에서 지역구 역인덱스 생성
+    반환: { "해운대": [{"district": "부산 해운대구을", "mona_cd": "3BC6890E"}, ...], ... }
+    """
+    import re
+    index: Dict[str, List[Dict]] = {}
+
+    try:
+        with open(lawmakers_path, encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        logger.warning(f"의원 데이터 로드 실패: {e}")
+        return index
+
+    for m in data:
+        district = m.get("district", "")
+        mona_cd = m.get("mona_cd", "")
+        if not district or district == "비례대표" or not mona_cd:
+            continue
+
+        entry = {"district": district, "mona_cd": mona_cd}
+
+        # 광역 단위 (서울, 부산, 경기 등)
+        parts = district.split(" ", 1)
+        region = parts[0]
+        for abbrev in REGION_ABBREV:
+            if district.startswith(abbrev):
+                index.setdefault(abbrev, []).append(entry)
+
+        # 세부 지역 키워드 추출 (시/구/군 단위)
+        sub = parts[1] if len(parts) > 1 else district
+        sub_clean = re.sub(r"[갑을병정]$", "", sub)  # 갑/을/병/정 제거
+
+        # 예: "해운대구" → "해운대", "성남시분당구" → "성남", "분당"
+        tokens = re.findall(r"([가-힣]+?)(?:특별자치시|특별시|광역시|자치시|시|구|군)", sub_clean)
+        for token in tokens:
+            if len(token) >= 2:  # 1글자 단위(동/서/남/북)는 애매해서 제외
+                index.setdefault(token, []).append(entry)
+
+    logger.info(f"📍 지역구 인덱스 구축: {len(index)}개 키워드 → {sum(len(v) for v in index.values())}개 매핑")
+    return index
 
 # 정치/사회 관련 키워드 (1차 필터)
 RELEVANT_KEYWORDS = [
@@ -112,6 +141,10 @@ class IssueManAgent:
         self.client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY", "").strip())
         self.model = "gpt-4o-mini"
         self._processed_hashes: set = set()  # 중복 방지 (런타임)
+
+        # 실제 의원 데이터 기반 지역구 인덱스 로드
+        lawmakers_path = Path(__file__).parent.parent / "data" / "assembly" / "lawmakers_real.json"
+        self._district_index = build_district_index(lawmakers_path)
 
         logger.info("🗞️ 이슈맨 AI 초기화 완료")
 
@@ -190,19 +223,24 @@ class IssueManAgent:
         - 시민제보 형식으로 변환
         """
 
-        # 1차: 지역 키워드로 빠른 지역구 후보 추출
+        # 1차: 실제 지역구 인덱스로 후보 추출
         combined = f"{article['title']} {article['description']}"
-        region_candidates = []
-        for region, keywords in DISTRICT_KEYWORDS.items():
-            if any(kw in combined for kw in keywords):
-                region_candidates.append(region)
+        matched_districts: Dict[str, str] = {}  # district → mona_cd
+
+        for keyword, entries in self._district_index.items():
+            if keyword in combined:
+                for entry in entries:
+                    matched_districts[entry["district"]] = entry["mona_cd"]
 
         # 지역 관련 없는 기사는 '전국' 이슈로 처리
-        region_context = (
-            f"관련 지역 후보: {', '.join(region_candidates)}"
-            if region_candidates
-            else "지역 특정 어려움 (전국 이슈)"
-        )
+        if matched_districts:
+            candidates_str = ", ".join(list(matched_districts.keys())[:5])
+            region_context = f"매칭된 지역구 후보: {candidates_str}"
+        else:
+            region_context = "지역 특정 어려움 (전국 이슈)"
+
+        # 후보 지역구 목록을 AI에게 제공 (없으면 전국)
+        candidate_list = list(matched_districts.keys())[:5] if matched_districts else []
 
         prompt = f"""다음 뉴스 기사를 시민제보 형식으로 변환해주세요.
 
@@ -213,13 +251,15 @@ class IssueManAgent:
 
 다음 JSON 형식으로만 응답하세요 (다른 텍스트 없이):
 {{
-  "relevant": true/false,  // 정치/사회/민생 관련 여부
-  "district": "지역구명 또는 '전국'",  // 예: "서울특별시", "부산광역시", "전국"
-  "report_type": "현안" 또는 "기사",  // 현안=시민이 직접 겪는 문제, 기사=뉴스 보도
-  "title": "시민제보 제목 (30자 이내, 핵심 이슈 중심)",
-  "content": "시민제보 내용 (100-200자, 문제점과 필요한 조치 중심으로)",
+  "relevant": true/false,
+  "district": "{candidate_list[0] if candidate_list else '전국'}",
+  "report_type": "현안" 또는 "기사",
+  "title": "시민제보 제목 (30자 이내)",
+  "content": "시민제보 내용 (100-200자, 문제점과 필요한 조치 중심)",
   "policy_suggestion": "정책 제안 한 줄 (없으면 null)"
-}}"""
+}}
+
+district는 반드시 후보 목록 중 가장 관련 높은 것을 선택하세요: {candidate_list if candidate_list else ['전국']}"""
 
         try:
             response = await self.client.chat.completions.create(
@@ -267,8 +307,8 @@ class IssueManAgent:
     async def save_to_db(self, db, report: Dict) -> bool:
         """district_reports 테이블에 저장"""
         try:
-            # 지역구 → 의원 mona_cd 매핑 (없으면 지역 대표값 사용)
-            mona_cd = await self._get_mona_cd(db, report["district"])
+            # 지역구 인덱스에서 mona_cd 즉시 조회 (DB 추가 호출 없음)
+            mona_cd = self._get_mona_cd(report["district"])
 
             data = {
                 "district": report["district"],
@@ -289,21 +329,24 @@ class IssueManAgent:
             logger.error(f"DB 저장 실패: {e}")
         return False
 
-    async def _get_mona_cd(self, db, district: str) -> str:
-        """지역구에서 대표 의원 mona_cd 조회"""
-        try:
-            result = (
-                db.table("assembly_members")
-                .select("mona_cd")
-                .ilike("district", f"%{district.replace('특별시','').replace('광역시','').replace('도','').strip()}%")
-                .limit(1)
-                .execute()
-            )
-            if result.data:
-                return result.data[0]["mona_cd"]
-        except Exception:
-            pass
-        return "NATIONAL"  # 전국 이슈 기본값
+    def _get_mona_cd(self, district: str) -> str:
+        """지역구 인덱스에서 mona_cd 조회 (DB 호출 없음, 빠름)"""
+        if district == "전국":
+            return "NATIONAL"
+
+        # 정확히 매칭되는 지역구 먼저 탐색
+        for keyword, entries in self._district_index.items():
+            for entry in entries:
+                if entry["district"] == district:
+                    return entry["mona_cd"]
+
+        # 부분 매칭 (예: "서울 강남구"로 "서울 강남구병" 매칭)
+        for keyword, entries in self._district_index.items():
+            if keyword in district or district in keyword:
+                if entries:
+                    return entries[0]["mona_cd"]
+
+        return "NATIONAL"
 
     # ─── 메인 실행 ───────────────────────────────────────────────────
 
