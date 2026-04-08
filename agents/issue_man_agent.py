@@ -45,20 +45,28 @@ RSS_SOURCES = [
         "url": "https://www.yna.co.kr/rss/local.xml",
     },
     {
-        "name": "뉴스1_정치",
-        "url": "https://www.news1.kr/rss/politics",
+        "name": "SBS뉴스_정치",
+        "url": "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=01",
     },
     {
-        "name": "뉴스1_사회",
-        "url": "https://www.news1.kr/rss/society",
+        "name": "경향신문",
+        "url": "https://www.khan.co.kr/rss/rssdata/total_news.xml",
     },
     {
-        "name": "한겨레_정치",
-        "url": "https://www.hani.co.kr/rss/politics/",
+        "name": "한겨레",
+        "url": "https://www.hani.co.kr/rss/",
     },
     {
-        "name": "KBS_정치",
-        "url": "https://world.kbs.co.kr/rss/rss_news.htm?lang=k",
+        "name": "국민일보_정치",
+        "url": "https://www.kmib.co.kr/rss/data/kmibPolRss.xml",
+    },
+    {
+        "name": "국민일보_사회",
+        "url": "https://www.kmib.co.kr/rss/data/kmibSocRss.xml",
+    },
+    {
+        "name": "SBS뉴스_사회",
+        "url": "https://news.sbs.co.kr/news/SectionRssFeed.do?sectionId=02",
     },
 ]
 
