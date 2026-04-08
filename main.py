@@ -2231,6 +2231,94 @@ async def get_issue_man_stats():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/issue-man/logs")
+async def get_issue_man_logs():
+    """
+    이슈맨 AI 운영 로그 대시보드
+    - 일별 등록 건수 (최근 7일)
+    - 지역구별 분포
+    - 시민 전환 현황
+    - 전국 vs 지역 비율
+    """
+    try:
+        from datetime import datetime, timedelta, timezone
+
+        now = datetime.now(timezone.utc)
+        seven_days_ago = (now - timedelta(days=7)).isoformat()
+
+        # 최근 7일 AI뉴스 등록 현황
+        recent = supabase_admin.table("district_reports") \
+            .select("id, district, title, created_at, source_type") \
+            .eq("user_name", "이슈맨AI") \
+            .gte("created_at", seven_days_ago) \
+            .order("created_at", desc=True) \
+            .execute()
+
+        items = recent.data or []
+
+        # 일별 집계
+        daily = {}
+        for item in items:
+            day = item["created_at"][:10]
+            daily[day] = daily.get(day, 0) + 1
+
+        # 지역별 집계
+        district_counts = {}
+        for item in items:
+            d = item.get("district", "전국")
+            district_counts[d] = district_counts.get(d, 0) + 1
+
+        national = district_counts.get("전국", 0)
+        local = sum(v for k, v in district_counts.items() if k != "전국")
+        total = national + local
+        local_rate = round(local / total * 100, 1) if total > 0 else 0
+
+        # 시민 전환된 항목 수 (7일)
+        converted = supabase_admin.table("district_reports") \
+            .select("id") \
+            .eq("source_type", "citizen") \
+            .gte("created_at", seven_days_ago) \
+            .execute()
+
+        # 전체 누적 AI뉴스 수
+        total_all = supabase_admin.table("district_reports") \
+            .select("id", count="exact") \
+            .eq("user_name", "이슈맨AI") \
+            .execute()
+
+        # 가장 최근 등록 시각
+        last_run = items[0]["created_at"] if items else None
+
+        return {
+            "summary": {
+                "total_all_time": total_all.count or 0,
+                "last_7days": total,
+                "last_run": last_run,
+                "local_rate_pct": local_rate,
+                "citizen_converts_7days": len(converted.data or []),
+            },
+            "daily": [
+                {"date": k, "count": v}
+                for k, v in sorted(daily.items(), reverse=True)
+            ],
+            "top_districts": sorted(
+                [{"district": k, "count": v} for k, v in district_counts.items()],
+                key=lambda x: -x["count"]
+            )[:10],
+            "recent_5": [
+                {
+                    "title": x["title"][:40],
+                    "district": x["district"],
+                    "created_at": x["created_at"],
+                }
+                for x in items[:5]
+            ],
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============== 정적 파일 서빙 (웹 프론트엔드) ==============
 
 @app.get("/manifest.json")
@@ -2244,6 +2332,90 @@ async def service_worker():
 @app.get("/app")
 async def serve_frontend():
     return FileResponse(Path(__file__).parent / "index.html")
+
+@app.get("/logs")
+async def issue_man_log_page():
+    """이슈맨 AI 운영 로그 대시보드 페이지"""
+    html = """<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이슈맨 AI 로그</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, sans-serif; background:#0d1117; color:#e6edf3; padding:1.5rem; }
+h1 { color:#58a6ff; margin-bottom:1.5rem; font-size:1.4rem; }
+h2 { color:#8b949e; font-size:0.9rem; text-transform:uppercase; margin:1.5rem 0 0.5rem; letter-spacing:1px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1rem; margin-bottom:1rem; }
+.card { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:1rem; }
+.big { font-size:2rem; font-weight:700; color:#58a6ff; }
+.label { font-size:0.8rem; color:#8b949e; margin-top:0.3rem; }
+.good { color:#3fb950; }
+.warn { color:#d29922; }
+table { width:100%; border-collapse:collapse; background:#161b22; border-radius:8px; overflow:hidden; }
+th { background:#21262d; padding:0.6rem 1rem; text-align:left; font-size:0.8rem; color:#8b949e; }
+td { padding:0.6rem 1rem; font-size:0.85rem; border-top:1px solid #21262d; }
+.refresh { background:#238636; color:white; border:none; padding:0.5rem 1.2rem; border-radius:6px; cursor:pointer; font-size:0.9rem; margin-bottom:1rem; }
+.refresh:hover { background:#2ea043; }
+.ts { color:#8b949e; font-size:0.75rem; }
+</style>
+</head>
+<body>
+<h1>📊 이슈맨 AI 운영 로그</h1>
+<button class="refresh" onclick="load()">새로고침</button>
+<span class="ts" id="lastRefresh"></span>
+
+<div class="grid" id="summary"></div>
+
+<h2>일별 등록 (최근 7일)</h2>
+<table id="daily"><tr><th>날짜</th><th>등록 건수</th></tr></table>
+
+<h2>지역 분포 Top 10</h2>
+<table id="districts"><tr><th>지역구</th><th>건수</th></tr></table>
+
+<h2>최근 등록 5건</h2>
+<table id="recent"><tr><th>제목</th><th>지역</th><th>시각</th></tr></table>
+
+<script>
+const API = '';
+async function load() {
+    document.getElementById('lastRefresh').textContent = '로딩 중...';
+    try {
+        const r = await fetch(API + '/api/issue-man/logs');
+        const d = await r.json();
+        const s = d.summary;
+
+        document.getElementById('summary').innerHTML = `
+            <div class="card"><div class="big">${s.total_all_time}</div><div class="label">전체 누적</div></div>
+            <div class="card"><div class="big">${s.last_7days}</div><div class="label">최근 7일</div></div>
+            <div class="card"><div class="big ${s.local_rate_pct >= 30 ? 'good' : 'warn'}">${s.local_rate_pct}%</div><div class="label">지역 매핑률</div></div>
+            <div class="card"><div class="big good">${s.citizen_converts_7days}</div><div class="label">시민 전환 (7일)</div></div>
+            <div class="card" style="grid-column:span 2"><div class="label">마지막 실행</div><div style="font-size:0.9rem;margin-top:0.3rem">${s.last_run ? new Date(s.last_run).toLocaleString('ko-KR') : '기록없음'}</div></div>
+        `;
+
+        document.getElementById('daily').innerHTML = '<tr><th>날짜</th><th>등록 건수</th></tr>' +
+            d.daily.map(x => `<tr><td>${x.date}</td><td>${x.count}건</td></tr>`).join('');
+
+        document.getElementById('districts').innerHTML = '<tr><th>지역구</th><th>건수</th></tr>' +
+            d.top_districts.map(x => `<tr><td>${x.district}</td><td>${x.count}건</td></tr>`).join('');
+
+        document.getElementById('recent').innerHTML = '<tr><th>제목</th><th>지역</th><th>시각</th></tr>' +
+            d.recent_5.map(x => `<tr><td>${x.title}</td><td>${x.district}</td><td class="ts">${new Date(x.created_at).toLocaleString('ko-KR')}</td></tr>`).join('');
+
+        document.getElementById('lastRefresh').textContent = ' · 갱신: ' + new Date().toLocaleTimeString('ko-KR');
+    } catch(e) {
+        document.getElementById('summary').innerHTML = '<div class="card"><div class="label" style="color:#f85149">로딩 실패: ' + e.message + '</div></div>';
+    }
+}
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>"""
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=html)
+
 
 @app.get("/privacy")
 async def privacy_policy():
