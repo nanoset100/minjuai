@@ -413,6 +413,67 @@
         .loading { text-align: center; padding: 2rem; color: var(--text-light); }
         .typing { opacity: 0.6; font-style: italic; }
 
+        /* AI뉴스 섹션 */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .news-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .news-district {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: rgba(102,126,234,0.1);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            display: inline-block;
+            width: fit-content;
+        }
+        .news-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.4;
+        }
+        .news-content {
+            font-size: 0.82rem;
+            color: var(--text-light);
+            line-height: 1.5;
+        }
+        .news-meta {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+        .btn-convert {
+            margin-top: 0.5rem;
+            background: linear-gradient(135deg, #00b894, #00cec9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn-convert:hover { opacity: 0.85; }
+        .btn-convert:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-convert.done {
+            background: #636e72;
+        }
+
         /* 모바일 반응형 */
         @media (max-width: 768px) {
             .nav-links { display: none; }
@@ -444,6 +505,7 @@
             <button class="hamburger" onclick="toggleMenu()">&#9776;</button>
             <ul class="nav-links" id="navLinks">
                 <li><a href="#stats">현황</a></li>
+                <li><a href="#news">AI뉴스</a></li>
                 <li><a href="#policies">정책</a></li>
                 <li><a href="#chat">상담</a></li>
                 <li><a href="#propose">제안</a></li>
@@ -464,6 +526,16 @@
     <section class="stats" id="stats">
         <div class="stats-container" id="statsContainer">
             <div class="loading">통계 로딩 중...</div>
+        </div>
+    </section>
+
+    <section class="section" id="news">
+        <h2 class="section-title">이슈맨 AI 뉴스</h2>
+        <p style="text-align:center;color:var(--text-light);margin-bottom:1.5rem;font-size:0.9rem;">
+            AI가 수집한 지역 이슈입니다. "우리 지역 문제예요!" 버튼으로 시민 제보로 전환하세요.
+        </p>
+        <div class="news-grid" id="newsGrid">
+            <div class="loading">뉴스 로딩 중...</div>
         </div>
     </section>
 
@@ -723,9 +795,96 @@
             }
         }
 
+        // 익명 사용자 ID (localStorage 영구 저장)
+        function getAnonId() {
+            let id = localStorage.getItem('anon_id');
+            if (!id) {
+                id = Math.random().toString(36).substr(2, 12);
+                localStorage.setItem('anon_id', id);
+            }
+            return id;
+        }
+
+        // 전환된 뉴스 ID 목록 (localStorage)
+        function getConvertedIds() {
+            return JSON.parse(localStorage.getItem('converted_news') || '[]');
+        }
+        function markConverted(id) {
+            const ids = getConvertedIds();
+            if (!ids.includes(id)) ids.push(id);
+            localStorage.setItem('converted_news', JSON.stringify(ids));
+        }
+
+        // AI뉴스 로드
+        async function loadNews() {
+            try {
+                const r = await fetch(`${API_URL}/api/news-feed?limit=12`);
+                const d = await r.json();
+                const items = d.items || d || [];
+                const converted = getConvertedIds();
+
+                if (!items.length) {
+                    document.getElementById('newsGrid').innerHTML = '<p class="loading">등록된 AI뉴스가 없습니다</p>';
+                    return;
+                }
+
+                document.getElementById('newsGrid').innerHTML = items.map(item => {
+                    const alreadyDone = converted.includes(item.id);
+                    const date = item.created_at ? new Date(item.created_at).toLocaleDateString('ko-KR') : '';
+                    return `
+                    <div class="news-card" id="card-${item.id}">
+                        <span class="news-district">${item.district || '전국'}</span>
+                        <div class="news-title">${item.title}</div>
+                        <div class="news-content">${(item.content || '').substring(0, 100)}...</div>
+                        <div class="news-meta">${date}${item.news_url ? ` · <a href="${item.news_url}" target="_blank" style="color:var(--primary)">원문보기</a>` : ''}</div>
+                        <button
+                            class="btn-convert${alreadyDone ? ' done' : ''}"
+                            id="btn-${item.id}"
+                            onclick="convertNews('${item.id}')"
+                            ${alreadyDone ? 'disabled' : ''}>
+                            ${alreadyDone ? '✓ 제보 완료' : '우리 지역 문제예요!'}
+                        </button>
+                    </div>`;
+                }).join('');
+            } catch (e) {
+                document.getElementById('newsGrid').innerHTML = '<p class="loading">뉴스를 불러올 수 없습니다</p>';
+            }
+        }
+
+        // AI뉴스 → 시민제보 전환
+        async function convertNews(reportId) {
+            const btn = document.getElementById(`btn-${reportId}`);
+            btn.disabled = true;
+            btn.textContent = '제보 중...';
+
+            try {
+                const anonId = getAnonId();
+                const r = await fetch(`${API_URL}/api/news-feed/${reportId}/convert?anon_id=${anonId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                });
+                const d = await r.json();
+
+                if (d.success) {
+                    btn.textContent = '✓ 제보 완료';
+                    btn.classList.add('done');
+                    markConverted(reportId);
+                } else {
+                    btn.textContent = d.message || '이미 제보하셨습니다';
+                    btn.classList.add('done');
+                    markConverted(reportId);
+                }
+            } catch (e) {
+                btn.disabled = false;
+                btn.textContent = '우리 지역 문제예요!';
+                alert('오류가 발생했습니다. 다시 시도해주세요.');
+            }
+        }
+
         // 페이지 로드
         window.addEventListener('load', () => {
             loadStats();
+            loadNews();
             loadPolicies();
         });
 

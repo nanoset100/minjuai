@@ -2130,6 +2130,72 @@ async def debug_env():
     }
 
 
+# ============== 이슈맨→시민 전환 ==============
+
+@app.post("/api/news-feed/{report_id}/convert")
+async def convert_ai_news_to_citizen(
+    report_id: str,
+    anon_id: str = None,
+    user=Depends(verify_user)
+):
+    """
+    AI뉴스를 시민 제보로 전환
+    - "이 이슈 우리 지역 문제예요!" 버튼 클릭 시 호출
+    - anon_id: 웹 앱에서 localStorage 익명 ID (JWT 없이 호출 시)
+    """
+    try:
+        # 사용자 식별자 결정 (JWT 우선, 없으면 anon_id)
+        user_id = user.get("sub") if user.get("sub") != "dev-user" else None
+        if not user_id and anon_id:
+            user_id = f"web_{anon_id}"
+        if not user_id:
+            user_id = f"web_anon"
+
+        # 원본 AI뉴스 조회
+        original = supabase_admin.table("district_reports") \
+            .select("*") \
+            .eq("id", report_id) \
+            .eq("source_type", "ai_news") \
+            .execute()
+
+        if not original.data:
+            raise HTTPException(status_code=404, detail="AI뉴스 항목을 찾을 수 없습니다")
+
+        orig = original.data[0]
+
+        # 동일 사용자가 이미 전환했는지 확인
+        existing = supabase_admin.table("district_reports") \
+            .select("id") \
+            .eq("news_url", orig.get("news_url", "")) \
+            .eq("source_type", "citizen") \
+            .eq("user_name", user_id) \
+            .execute()
+
+        if existing.data:
+            return {"success": False, "message": "이미 제보하셨습니다"}
+
+        # 시민 제보로 새 항목 생성 (원본 ai_news는 유지)
+        new_report = {
+            "district": orig["district"],
+            "mona_cd": orig["mona_cd"],
+            "report_type": "현안",
+            "title": orig["title"],
+            "content": orig["content"],
+            "news_url": orig.get("news_url"),
+            "user_name": user_id,
+            "source_type": "citizen",
+            "status": "published",
+        }
+        result = supabase_admin.table("district_reports").insert(new_report).execute()
+
+        return {"success": True, "report_id": result.data[0]["id"] if result.data else None}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============== 이슈맨 AI ==============
 
 @app.post("/api/issue-man/run")
