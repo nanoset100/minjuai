@@ -466,10 +466,9 @@ async function showIssueDetail(issueId) {
 
     // 반응 목록
     const reactions = data.reactions || [];
-    if (reactions.length === 0) {
-      document.getElementById('reactions-list').innerHTML =
-        '<div class="empty"><p>의원 반응 데이터를 수집 중입니다</p></div>';
-    } else {
+
+    // 반응 있으면 반응 기반으로, 없으면 의원 목록 직접 조회해서 "수집중"으로 표시
+    if (reactions.length > 0) {
       document.getElementById('reactions-list').innerHTML = reactions.map(r => `
         <div class="member-row" onclick="selectMemberForLetter('${r.member_id}', '${escHtml(r.member_name)}', '${escHtml(r.member_district)}')">
           <img class="member-photo"
@@ -484,6 +483,31 @@ async function showIssueDetail(issueId) {
           <span class="stance-badge stance-${r.stance}">${r.stance}</span>
         </div>
       `).join('');
+    } else {
+      // 반응 없을 때 — 의원 목록 불러와서 수집중으로 표시
+      const membersResp = await fetch(API + '/api/members');
+      const membersData = membersResp.ok ? await membersResp.json() : { members: [] };
+      const members = membersData.members || [];
+      if (members.length === 0) {
+        document.getElementById('reactions-list').innerHTML =
+          '<div class="empty"><p>의원 반응 데이터를 수집 중입니다</p></div>';
+      } else {
+        document.getElementById('reactions-list').innerHTML =
+          '<div style="padding:10px 16px 4px;font-size:12px;color:#6b7280">AI 분석 중 — 의원을 선택해 편지를 보낼 수 있어요</div>' +
+          members.map(m => `
+            <div class="member-row" onclick="selectMemberForLetter('${m.mona_cd}', '${escHtml(m.name)}', '${escHtml(m.district)}')">
+              <img class="member-photo"
+                   src="${m.photo_url || ''}"
+                   onerror="this.src=''"
+                   alt="${escHtml(m.name)}">
+              <div class="member-info">
+                <div class="name">${escHtml(m.name)}</div>
+                <div class="district">${escHtml(m.district)}</div>
+              </div>
+              <span class="stance-badge stance-수집중">수집중</span>
+            </div>
+          `).join('');
+      }
     }
   } catch(e) {
     document.getElementById('issue-detail-header').innerHTML =
