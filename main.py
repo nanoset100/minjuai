@@ -30,11 +30,15 @@ from db import supabase_admin
 from dependencies import verify_admin, verify_app, verify_user
 from services.ontology_matcher import process_report_ontology, add_or_merge_candidate
 
+# MVP 라우터
+from routers.issues import router as issues_router
+from routers.letters import router as letters_router
+
 # FastAPI 앱
 app = FastAPI(
-    title="AI 정당 API",
-    description="1인 AI 정당 운영 시스템 API — Supabase 연동",
-    version="0.2.0"
+    title="정책AI API",
+    description="정책AI — 의원 반응 확인 + 시민 편지 발송",
+    version="1.0.0"
 )
 
 # CORS 설정
@@ -45,6 +49,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# MVP 라우터 등록
+app.include_router(issues_router)
+app.include_router(letters_router)
 
 # 전역 에이전트 (7개)
 support_agent = SupportAgent()          # 1. 챗봇
@@ -308,8 +316,17 @@ class VoteRequest(BaseModel):
 
 @app.get("/")
 async def landing_page():
-    """메인 랜딩 페이지 (한영 2개국어)"""
+    """정책AI MVP 메인 페이지"""
+    mvp_path = Path(__file__).parent / "mvp" / "index.html"
+    if mvp_path.exists():
+        return FileResponse(mvp_path)
     return FileResponse(Path(__file__).parent / "landing.html")
+
+
+@app.get("/legacy")
+async def legacy_page():
+    """기존 index.html (레거시)"""
+    return FileResponse(Path(__file__).parent / "index.html")
 
 
 @app.get("/api")

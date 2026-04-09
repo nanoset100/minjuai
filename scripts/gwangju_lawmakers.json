@@ -1,0 +1,108 @@
+{
+  "tested_at": "2026-04-08 22:01",
+  "total_gwangju": 10,
+  "has_email_count": 10,
+  "no_email_count": 0,
+  "lawmakers": [
+    {
+      "name": "민형배",
+      "party": "더불어민주당",
+      "district": "광주 광산구을",
+      "election_type": "지역구",
+      "email": "mhb1961@naver.com",
+      "homepage": "https://blog.naver.com/gjminsim",
+      "tel": "02-6788-6426",
+      "mona_cd": "VRY5522V"
+    },
+    {
+      "name": "박균택",
+      "party": "더불어민주당",
+      "district": "광주 광산구갑",
+      "election_type": "지역구",
+      "email": "7849580@naver.com",
+      "homepage": null,
+      "tel": "02-784-9580",
+      "mona_cd": "IWR8966I"
+    },
+    {
+      "name": "소병훈",
+      "party": "더불어민주당",
+      "district": "경기 광주시갑",
+      "election_type": "지역구",
+      "email": "sotong848@daum.net",
+      "homepage": "http://blog.naver.com/sotongsa",
+      "tel": "02-784-5020",
+      "mona_cd": "ZDR63255"
+    },
+    {
+      "name": "안도걸",
+      "party": "더불어민주당",
+      "district": "광주 동구남구을",
+      "election_type": "지역구",
+      "email": "ahndogeol@naver.com",
+      "homepage": "https://blog.naver.com/ahndogeol",
+      "tel": "02-784-4441",
+      "mona_cd": "EB16073M"
+    },
+    {
+      "name": "안태준",
+      "party": "더불어민주당",
+      "district": "경기 광주시을",
+      "election_type": "지역구",
+      "email": "antagt@naver.com",
+      "homepage": "https://blog.naver.com/antagt",
+      "tel": "02-784-6040",
+      "mona_cd": "W8L9421K"
+    },
+    {
+      "name": "양부남",
+      "party": "더불어민주당",
+      "district": "광주 서구을",
+      "election_type": "지역구",
+      "email": "ybn733@naver.com",
+      "homepage": null,
+      "tel": "02-784-1422",
+      "mona_cd": "CK143054"
+    },
+    {
+      "name": "전진숙",
+      "party": "더불어민주당",
+      "district": "광주 북구을",
+      "election_type": "지역구",
+      "email": "518jjs@naver.com",
+      "homepage": "https://blog.naver.com/gwangjusook",
+      "tel": "02-784-6120",
+      "mona_cd": "QUR40502"
+    },
+    {
+      "name": "정준호",
+      "party": "더불어민주당",
+      "district": "광주 북구갑",
+      "election_type": "지역구",
+      "email": "jjhgj0503@naver.com",
+      "homepage": "https://blog.naver.com/cyclops53",
+      "tel": "02-784-1091",
+      "mona_cd": "IC499858"
+    },
+    {
+      "name": "정진욱",
+      "party": "더불어민주당",
+      "district": "광주 동구남구갑",
+      "election_type": "지역구",
+      "email": "chungco518@gmail.com",
+      "homepage": "https://blog.naver.com/chungchinookofficial",
+      "tel": "02-784-2570",
+      "mona_cd": "9HE7226N"
+    },
+    {
+      "name": "조인철",
+      "party": "더불어민주당",
+      "district": "광주 서구갑",
+      "election_type": "지역구",
+      "email": "2024iccho@gmail.com",
+      "homepage": "https://blog.naver.com/iccho19",
+      "tel": "02-784-8191",
+      "mona_cd": "ZKB18611"
+    }
+  ]
+}

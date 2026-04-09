@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="theme-color" content="#1a56db">
+  <title>정책AI — 우리 의원은 어디에 서 있나요?</title>
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    /* ─── 기본 리셋 ───────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --blue: #1a56db;
+      --blue-light: #e8f0ff;
+      --green: #057a55;
+      --red: #c81e1e;
+      --gray: #6b7280;
+      --gray-light: #f3f4f6;
+      --border: #e5e7eb;
+      --text: #111827;
+      --radius: 12px;
+      --max-w: 430px;
+    }
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+      background: #f9fafb;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ─── 레이아웃 ───────────────────────────────────────── */
+    .app { max-width: var(--max-w); margin: 0 auto; min-height: 100vh; background: #fff; position: relative; }
+    .header {
+      background: var(--blue);
+      color: #fff;
+      padding: 16px 20px 14px;
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header h1 { font-size: 18px; font-weight: 700; }
+    .header .subtitle { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+    .back-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; padding: 4px 8px 4px 0; }
+
+    /* ─── 화면 전환 ─────────────────────────────────────── */
+    .screen { display: none; padding: 0 0 80px; }
+    .screen.active { display: block; }
+
+    /* ─── 하단 탭 ───────────────────────────────────────── */
+    .tab-bar {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: var(--max-w);
+      background: #fff; border-top: 1px solid var(--border);
+      display: flex; z-index: 100;
+    }
+    .tab-btn {
+      flex: 1; padding: 10px 4px 8px; border: none; background: none;
+      font-size: 10px; color: var(--gray); cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .tab-btn .icon { font-size: 20px; }
+    .tab-btn.active { color: var(--blue); font-weight: 600; }
+
+    /* ─── 화면 1: 이슈 목록 ─────────────────────────────── */
+    .issue-card {
+      margin: 12px 16px 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+    .issue-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .issue-card h3 { font-size: 15px; font-weight: 600; line-height: 1.4; }
+    .issue-card .meta { margin-top: 8px; font-size: 12px; color: var(--gray); display: flex; gap: 8px; }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-찬성 { background: #d1fae5; color: var(--green); }
+    .badge-반대 { background: #fee2e2; color: var(--red); }
+    .badge-침묵 { background: var(--gray-light); color: var(--gray); }
+    .badge-committee { background: var(--blue-light); color: var(--blue); }
+    .stance-summary { margin-top: 10px; display: flex; gap: 6px; }
+
+    /* ─── 화면 2: 이슈 상세 (의원 반응) ────────────────── */
+    .issue-detail-header {
+      padding: 20px 16px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .issue-detail-header h2 { font-size: 17px; font-weight: 700; line-height: 1.4; }
+    .data-date-notice {
+      margin-top: 8px; font-size: 11px; color: var(--gray);
+      background: var(--gray-light); padding: 6px 10px; border-radius: 6px;
+    }
+    .member-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .member-photo {
+      width: 44px; height: 44px; border-radius: 50%;
+      object-fit: cover; background: var(--gray-light);
+      flex-shrink: 0;
+    }
+    .member-info { flex: 1; min-width: 0; }
+    .member-info .name { font-size: 15px; font-weight: 600; }
+    .member-info .district { font-size: 12px; color: var(--gray); margin-top: 2px; }
+    .member-info .summary { font-size: 12px; color: #374151; margin-top: 4px; }
+    .stance-badge {
+      padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .stance-찬성 { background: #d1fae5; color: var(--green); }
+    .stance-반대 { background: #fee2e2; color: var(--red); }
+    .stance-침묵 { background: var(--gray-light); color: var(--gray); }
+    .stance-수집중 { background: #fef3c7; color: #92400e; }
+    .write-btn {
+      margin: 16px; width: calc(100% - 32px);
+      padding: 14px; border-radius: var(--radius);
+      background: var(--blue); color: #fff;
+      border: none; font-size: 16px; font-weight: 600; cursor: pointer;
+    }
+    .write-btn:active { opacity: 0.9; }
+
+    /* ─── 화면 3: 편지 작성 ─────────────────────────────── */
+    .letter-form { padding: 20px 16px; }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--gray); margin-bottom: 6px; display: block; }
+    .form-input {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 15px; font-family: inherit;
+      outline: none; transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--blue); }
+    .form-textarea {
+      width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 15px; font-family: inherit;
+      min-height: 180px; resize: vertical; outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-textarea:focus { border-color: var(--blue); }
+    .char-count { font-size: 11px; color: var(--gray); text-align: right; margin-top: 4px; }
+    .form-group { margin-bottom: 20px; }
+    .to-member-box {
+      background: var(--blue-light); border-radius: 8px; padding: 12px 14px;
+      margin-bottom: 20px;
+    }
+    .to-member-box .to-label { font-size: 11px; color: var(--blue); font-weight: 600; }
+    .to-member-box .to-name { font-size: 16px; font-weight: 700; color: var(--blue); margin-top: 2px; }
+    .to-member-box .to-district { font-size: 12px; color: #4b73d3; }
+    .submit-btn {
+      width: 100%; padding: 16px; border-radius: var(--radius);
+      background: var(--blue); color: #fff;
+      border: none; font-size: 17px; font-weight: 700; cursor: pointer;
+    }
+    .submit-btn:disabled { background: var(--gray); cursor: not-allowed; }
+    .filter-notice {
+      font-size: 12px; color: var(--gray); text-align: center;
+      margin-top: 12px; line-height: 1.5;
+    }
+
+    /* ─── 화면 4: 전달됨 ─────────────────────────────────── */
+    .done-screen {
+      padding: 40px 24px;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .done-icon { font-size: 64px; margin-bottom: 16px; }
+    .done-title { font-size: 24px; font-weight: 800; color: var(--green); }
+    .done-subtitle { font-size: 15px; color: var(--gray); margin-top: 8px; line-height: 1.5; }
+    .done-meta {
+      margin-top: 24px; background: var(--gray-light);
+      border-radius: var(--radius); padding: 16px 20px;
+      width: 100%; text-align: left;
+    }
+    .done-meta .meta-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+    .done-meta .meta-row:last-child { margin-bottom: 0; }
+    .done-meta .meta-label { color: var(--gray); }
+    .done-meta .meta-value { font-weight: 600; }
+    .counter-box {
+      margin-top: 20px; background: var(--blue-light);
+      border-radius: var(--radius); padding: 16px 20px;
+      width: 100%;
+    }
+    .counter-box .counter-num { font-size: 32px; font-weight: 800; color: var(--blue); }
+    .counter-box .counter-label { font-size: 13px; color: #4b73d3; margin-top: 4px; }
+    .done-actions { margin-top: 24px; display: flex; gap: 10px; width: 100%; }
+    .done-actions button {
+      flex: 1; padding: 12px; border-radius: 8px;
+      font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+    }
+    .btn-share { background: var(--gray-light); color: var(--text); }
+    .btn-more { background: var(--blue); color: #fff; }
+
+    /* ─── 화면 5: 지역구 선택 (홈) ─────────────────────── */
+    .home-hero {
+      background: linear-gradient(135deg, var(--blue) 0%, #3b5de8 100%);
+      color: #fff; padding: 32px 20px 28px;
+      text-align: center;
+    }
+    .home-hero h2 { font-size: 22px; font-weight: 800; line-height: 1.3; }
+    .home-hero p { font-size: 14px; opacity: 0.85; margin-top: 8px; line-height: 1.6; }
+    .district-select {
+      margin: 20px 16px 0;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px; font-family: inherit;
+      background: #fff; width: calc(100% - 32px);
+      outline: none; cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+    }
+    .stats-bar {
+      margin: 20px 16px 0; padding: 14px 16px;
+      background: var(--blue-light); border-radius: var(--radius);
+      display: flex; gap: 16px; align-items: center;
+    }
+    .stats-bar .stat { text-align: center; flex: 1; }
+    .stats-bar .stat-num { font-size: 22px; font-weight: 800; color: var(--blue); }
+    .stats-bar .stat-label { font-size: 11px; color: #4b73d3; margin-top: 2px; }
+    .stats-bar .divider { width: 1px; height: 36px; background: #c3d6ff; }
+
+    /* ─── 로딩 ───────────────────────────────────────────── */
+    .loading { text-align: center; padding: 40px 20px; color: var(--gray); }
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid var(--border);
+      border-top-color: var(--blue); border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─── 에러 / 빈 상태 ────────────────────────────────── */
+    .empty { text-align: center; padding: 48px 20px; color: var(--gray); }
+    .empty p { margin-top: 8px; font-size: 14px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ─── 헤더 ──────────────────────────────────────────── -->
+  <header class="header" id="app-header">
+    <div>
+      <h1 id="header-title">정책AI</h1>
+      <div class="subtitle" id="header-subtitle">우리 의원은 어디에 서 있나요?</div>
+    </div>
+    <button class="back-btn" id="back-btn" style="display:none" onclick="goBack()">←</button>
+  </header>
+
+  <!-- ─── 화면 1: 홈 (이슈 목록) ─────────────────────────── -->
+  <div class="screen active" id="screen-home">
+    <div class="home-hero">
+      <h2>우리 의원은<br>어디에 서 있나요?</h2>
+      <p>광주 시민이 관심 갖는 정책 이슈마다<br>의원의 찬성/반대/침묵을 AI가 분석합니다</p>
+    </div>
+
+    <div id="home-stats" class="stats-bar" style="display:none">
+      <div class="stat">
+        <div class="stat-num" id="stat-sent">-</div>
+        <div class="stat-label">시민 편지 발송</div>
+      </div>
+      <div class="divider"></div>
+      <div class="stat">
+        <div class="stat-num" id="stat-issues">-</div>
+        <div class="stat-label">분석 이슈</div>
+      </div>
+    </div>
+
+    <div id="issues-list">
+      <div class="loading">
+        <div class="spinner"></div>
+        이슈 불러오는 중...
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 화면 2: 이슈 상세 (의원 반응) ──────────────────── -->
+  <div class="screen" id="screen-issue">
+    <div class="issue-detail-header" id="issue-detail-header"></div>
+    <div id="reactions-list"></div>
+    <button class="write-btn" id="write-letter-btn" onclick="showLetterForm()">
+      ✉️ 의원에게 편지 보내기
+    </button>
+  </div>
+
+  <!-- ─── 화면 3: 편지 작성 ────────────────────────────────── -->
+  <div class="screen" id="screen-letter">
+    <div class="letter-form">
+      <div class="to-member-box" id="to-member-box"></div>
+
+      <div class="form-group">
+        <label class="form-label">내 지역구 (선택)</label>
+        <select class="form-input" id="letter-district">
+          <option value="">선택 안 함</option>
+          <option value="광주 광산구갑">광주 광산구갑</option>
+          <option value="광주 광산구을">광주 광산구을</option>
+          <option value="광주 동구남구갑">광주 동구남구갑</option>
+          <option value="광주 동구남구을">광주 동구남구을</option>
+          <option value="광주 북구갑">광주 북구갑</option>
+          <option value="광주 북구을">광주 북구을</option>
+          <option value="광주 서구갑">광주 서구갑</option>
+          <option value="광주 서구을">광주 서구을</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">닉네임 (선택)</label>
+        <input type="text" class="form-input" id="letter-nickname"
+               placeholder="예: 광주 시민" maxlength="20">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">편지 내용 <span style="color:#c81e1e">*</span></label>
+        <textarea class="form-textarea" id="letter-content"
+                  placeholder="의원님께 전하고 싶은 말을 적어주세요.&#10;(100자 이상)"
+                  oninput="updateCharCount()"></textarea>
+        <div class="char-count"><span id="char-count">0</span>자 / 최소 100자</div>
+      </div>
+
+      <button class="submit-btn" id="submit-btn" onclick="submitLetter()">편지 보내기</button>
+      <p class="filter-notice">AI가 욕설/스팸 여부를 자동 검사합니다.<br>부적절한 내용은 발송이 차단될 수 있습니다.</p>
+    </div>
+  </div>
+
+  <!-- ─── 화면 4: 전달됨 ──────────────────────────────────── -->
+  <div class="screen" id="screen-done">
+    <div class="done-screen">
+      <div class="done-icon">✓</div>
+      <div class="done-title">전달됐습니다</div>
+      <div class="done-subtitle" id="done-subtitle"></div>
+
+      <div class="done-meta" id="done-meta"></div>
+      <div class="counter-box">
+        <div class="counter-num" id="done-counter">-</div>
+        <div class="counter-label">지금까지 광주 시민이 보낸 편지</div>
+      </div>
+
+      <div class="done-actions">
+        <button class="btn-share" onclick="shareResult()">이미지로 저장</button>
+        <button class="btn-more" onclick="showHome()">다른 이슈 보기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 하단 탭 바 ──────────────────────────────────────── -->
+  <nav class="tab-bar" id="tab-bar">
+    <button class="tab-btn active" onclick="showHome()">
+      <span class="icon">📋</span>이슈
+    </button>
+    <button class="tab-btn" onclick="alert('준비 중입니다')">
+      <span class="icon">👤</span>우리 의원
+    </button>
+    <button class="tab-btn" onclick="alert('준비 중입니다')">
+      <span class="icon">ℹ️</span>소개
+    </button>
+  </nav>
+
+</div><!-- .app -->
+
+<script>
+// ─── 상태 ────────────────────────────────────────────────────
+const API = '';  // 상대 경로 (같은 origin)
+let state = {
+  currentIssue: null,
+  currentMember: null,
+  letterResult: null,
+  history: [],   // 화면 히스토리 스택
+};
+
+// ─── 화면 전환 ───────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function updateHeader(title, subtitle, showBack) {
+  document.getElementById('header-title').textContent = title;
+  document.getElementById('header-subtitle').textContent = subtitle;
+  document.getElementById('back-btn').style.display = showBack ? 'block' : 'none';
+}
+
+function goBack() {
+  if (state.history.length > 0) {
+    const prev = state.history.pop();
+    prev();
+  } else {
+    showHome();
+  }
+}
+
+// ─── 화면 1: 홈 ─────────────────────────────────────────────
+function showHome() {
+  state.history = [];
+  updateHeader('정책AI', '우리 의원은 어디에 서 있나요?', false);
+  showScreen('home');
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  loadIssues();
+  loadStats();
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch(API + '/api/letters/stats');
+    if (!r.ok) return;
+    const data = await r.json();
+    const el = document.getElementById('home-stats');
+    document.getElementById('stat-sent').textContent = data.total_sent || 0;
+    el.style.display = 'flex';
+  } catch {}
+}
+
+async function loadIssues() {
+  const container = document.getElementById('issues-list');
+  container.innerHTML = '<div class="loading"><div class="spinner"></div>이슈 불러오는 중...</div>';
+  try {
+    const r = await fetch(API + '/api/issues?limit=10');
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    const issues = data.issues || [];
+    document.getElementById('stat-issues').textContent = issues.length;
+
+    if (issues.length === 0) {
+      container.innerHTML = '<div class="empty"><p>아직 분석된 이슈가 없습니다.<br>곧 업데이트됩니다.</p></div>';
+      return;
+    }
+
+    container.innerHTML = issues.map(issue => `
+      <div class="issue-card" onclick="showIssueDetail('${issue.id}')">
+        <h3>${escHtml(issue.title)}</h3>
+        <div class="meta">
+          ${issue.committee ? `<span class="badge badge-committee">${escHtml(issue.committee)}</span>` : ''}
+          <span>${formatDate(issue.collected_at)}</span>
+        </div>
+        ${issue.summary ? `<p style="margin-top:8px;font-size:13px;color:#374151;line-height:1.5">${escHtml(issue.summary)}</p>` : ''}
+      </div>
+    `).join('');
+  } catch (e) {
+    container.innerHTML = '<div class="empty"><p>이슈를 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</p></div>';
+  }
+}
+
+// ─── 화면 2: 이슈 상세 ──────────────────────────────────────
+async function showIssueDetail(issueId) {
+  state.history.push(showHome);
+  updateHeader('의원 반응', 'AI 분석 결과', true);
+  showScreen('issue');
+  document.getElementById('issue-detail-header').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  document.getElementById('reactions-list').innerHTML = '';
+
+  try {
+    const r = await fetch(API + `/api/issues/${issueId}`);
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+
+    state.currentIssue = data.issue;
+
+    // 헤더
+    const dateNotice = data.data_date
+      ? `<div class="data-date-notice">📅 ${data.data_date} 기준 데이터${data.is_stale ? ' · <strong>데이터 갱신 중</strong>' : ''}<br><small>AI 생성 · 오류 신고: jeongchaek.ai</small></div>`
+      : '<div class="data-date-notice">데이터 수집 중입니다</div>';
+
+    document.getElementById('issue-detail-header').innerHTML = `
+      <h2>${escHtml(data.issue.title)}</h2>
+      ${dateNotice}
+    `;
+
+    // 반응 목록
+    const reactions = data.reactions || [];
+    if (reactions.length === 0) {
+      document.getElementById('reactions-list').innerHTML =
+        '<div class="empty"><p>의원 반응 데이터를 수집 중입니다</p></div>';
+    } else {
+      document.getElementById('reactions-list').innerHTML = reactions.map(r => `
+        <div class="member-row" onclick="selectMemberForLetter('${r.member_id}', '${escHtml(r.member_name)}', '${escHtml(r.member_district)}')">
+          <img class="member-photo"
+               src="${r.member_photo || ''}"
+               onerror="this.src=''"
+               alt="${escHtml(r.member_name)}">
+          <div class="member-info">
+            <div class="name">${escHtml(r.member_name)}</div>
+            <div class="district">${escHtml(r.member_district)}</div>
+            ${r.summary ? `<div class="summary">${escHtml(r.summary)}</div>` : ''}
+          </div>
+          <span class="stance-badge stance-${r.stance}">${r.stance}</span>
+        </div>
+      `).join('');
+    }
+  } catch(e) {
+    document.getElementById('issue-detail-header').innerHTML =
+      '<div class="empty"><p>데이터를 불러오지 못했습니다</p></div>';
+  }
+}
+
+// ─── 화면 3: 편지 작성 ──────────────────────────────────────
+function showLetterForm(monaCd, memberName, memberDistrict) {
+  if (monaCd) {
+    state.currentMember = { mona_cd: monaCd, name: memberName, district: memberDistrict };
+  }
+  if (!state.currentMember) {
+    alert('편지를 보낼 의원을 먼저 선택해주세요');
+    return;
+  }
+
+  state.history.push(() => showIssueDetail(state.currentIssue?.id));
+  updateHeader('편지 쓰기', state.currentMember.name + ' 의원님께', true);
+  showScreen('letter');
+
+  document.getElementById('to-member-box').innerHTML = `
+    <div class="to-label">받는 사람</div>
+    <div class="to-name">${escHtml(state.currentMember.name)} 의원님</div>
+    <div class="to-district">${escHtml(state.currentMember.district)}</div>
+  `;
+  document.getElementById('letter-content').value = '';
+  document.getElementById('char-count').textContent = '0';
+  document.getElementById('letter-nickname').value = '';
+}
+
+function selectMemberForLetter(monaCd, name, district) {
+  state.currentMember = { mona_cd: monaCd, name, district };
+  showLetterForm();
+}
+
+function updateCharCount() {
+  const len = document.getElementById('letter-content').value.length;
+  const el = document.getElementById('char-count');
+  el.textContent = len;
+  el.style.color = len >= 100 ? 'var(--green)' : 'var(--red)';
+}
+
+async function submitLetter() {
+  const content = document.getElementById('letter-content').value.trim();
+  const nickname = document.getElementById('letter-nickname').value.trim() || '시민';
+  const district = document.getElementById('letter-district').value;
+  const btn = document.getElementById('submit-btn');
+
+  if (content.length < 100) {
+    alert('편지를 100자 이상 작성해주세요 (' + content.length + '자)');
+    return;
+  }
+  if (!state.currentMember) {
+    alert('의원을 선택해주세요');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '발송 중...';
+
+  try {
+    const body = {
+      mona_cd: state.currentMember.mona_cd,
+      content,
+      nickname,
+      sender_district: district,
+      issue_id: state.currentIssue?.id || null,
+    };
+    const r = await fetch(API + '/api/letters', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+
+    if (!r.ok) {
+      if (data.detail?.blocked) {
+        alert('편지 발송이 차단됐습니다:\n' + (data.detail.reason || '부적절한 내용'));
+      } else {
+        alert('오류가 발생했습니다: ' + (data.detail || '다시 시도해주세요'));
+      }
+      return;
+    }
+
+    state.letterResult = data;
+    showDoneScreen(data);
+
+  } catch(e) {
+    alert('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '편지 보내기';
+  }
+}
+
+// ─── 화면 4: 전달됨 ─────────────────────────────────────────
+function showDoneScreen(data) {
+  state.history = [];
+  updateHeader('전달됐습니다', '', false);
+  showScreen('done');
+
+  const sentAt = data.sent_at ? new Date(data.sent_at) : new Date();
+  const dateStr = sentAt.toLocaleDateString('ko-KR', {year:'numeric',month:'long',day:'numeric'});
+  const timeStr = sentAt.toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit'});
+  const shortId = (data.letter_id || '').slice(0, 8).toUpperCase();
+
+  document.getElementById('done-subtitle').textContent =
+    `${data.member_name} 의원실에 방금 편지가 전달됐어요`;
+
+  document.getElementById('done-meta').innerHTML = `
+    <div class="meta-row">
+      <span class="meta-label">전달 일시</span>
+      <span class="meta-value">${dateStr} ${timeStr}</span>
+    </div>
+    <div class="meta-row">
+      <span class="meta-label">편지 번호</span>
+      <span class="meta-value">#${shortId}</span>
+    </div>
+    <div class="meta-row">
+      <span class="meta-label">받은 의원</span>
+      <span class="meta-value">${escHtml(data.member_name)} 의원님</span>
+    </div>
+  `;
+
+  document.getElementById('done-counter').textContent = (data.total_sent || 0).toLocaleString() + '건';
+}
+
+function shareResult() {
+  const text = `정책AI를 통해 광주 의원에게 편지를 보냈습니다!\njeongchaek.ai`;
+  if (navigator.share) {
+    navigator.share({ title: '정책AI 시민편지', text }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(text).then(() => alert('링크가 복사됐습니다'));
+  }
+}
+
+// ─── 유틸 ────────────────────────────────────────────────────
+function escHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('ko-KR', {month:'long', day:'numeric'});
+}
+
+// ─── 초기화 ──────────────────────────────────────────────────
+showHome();
+</script>
+</body>
+</html>
