@@ -5,3 +5,5 @@ config/.env
 *.zip
 data/logs/
 nul
+tmp_*.json
+tmp_*.txt

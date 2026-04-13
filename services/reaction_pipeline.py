@@ -4,16 +4,20 @@ reaction_pipeline.py
 
 흐름:
   1. Supabase에서 활성 이슈 목록 조회
-  2. 각 이슈의 키워드 → Assembly API 발언 검색
+  2. 각 이슈의 키워드 + 의원명 → 네이버 뉴스 검색
   3. GPT-4o mini로 찬성/반대/침묵 분류 (confidence >= 0.7)
   4. Supabase issue_reactions에 저장
 
 조회 시 GPT 호출 절대 금지 — 이 파이프라인만 GPT 호출
+
+[2026-04-13] Assembly API 속기록 엔드포인트(nrypmbwncpfmvoecp) 미존재 확인.
+             네이버 뉴스 검색 API로 대체 (의원명 + 이슈 키워드 조합 검색)
 """
 
 import os
 import json
 import httpx
+import re
 import asyncio
 from datetime import date, datetime
 from typing import Optional
@@ -26,9 +30,10 @@ SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 # OpenAI
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 
-# Assembly API
-ASSEMBLY_API_KEY = os.getenv("ASSEMBLY_API_KEY", "9803e6a51c334322ace8627791ce36a9")
-ASSEMBLY_BASE_URL = "https://open.assembly.go.kr/portal/openapi"
+# 네이버 뉴스 검색 API
+NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "")
+NAVER_CLIENT_SECRET = os.getenv("NAVER_CLIENT_SECRET", "")
+NAVER_NEWS_URL = "https://openapi.naver.com/v1/search/news.json"
 
 # 신뢰도 임계값 — 이 미만이면 "침묵"으로 처리
 CONFIDENCE_THRESHOLD = 0.7
@@ -74,43 +79,47 @@ class ReactionPipeline:
         resp.raise_for_status()
         return resp.json()
 
-    def _sb_upsert(self, table: str, rows: list) -> None:
+    def _sb_upsert(self, table: str, rows: list, on_conflict: str = "") -> None:
         url = f"{SUPABASE_URL}/rest/v1/{table}"
-        headers = {**self.headers, "Prefer": "resolution=merge-duplicates"}
+        if on_conflict:
+            url += f"?on_conflict={on_conflict}"
+        headers = {**self.headers, "Prefer": "resolution=merge-duplicates,return=minimal"}
         resp = httpx.post(url, headers=headers, json=rows, timeout=30)
         if resp.status_code not in (200, 201):
             print(f"[Pipeline] Supabase upsert 오류 ({table}): {resp.text[:200]}")
 
-    # ─── Assembly API ─────────────────────────────────────────
+    # ─── 네이버 뉴스 검색 ─────────────────────────────────────
 
-    def fetch_speeches(self, member_mona_cd: str, keywords: list[str]) -> list[str]:
-        """의원 코드 + 키워드로 국회 발언 검색"""
-        speeches = []
-        url = f"{ASSEMBLY_BASE_URL}/nrypmbwncpfmvoecp"  # 국회 속기록 검색
+    def fetch_speeches(self, member_name: str, keywords: list[str]) -> list[str]:
+        """의원명 + 키워드로 네이버 뉴스 검색 → 발언/입장 텍스트 추출"""
+        snippets = []
+        headers = {
+            "X-Naver-Client-Id": NAVER_CLIENT_ID,
+            "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
+        }
 
-        for keyword in keywords[:3]:  # 키워드 최대 3개만 검색
+        for keyword in keywords[:3]:  # 키워드 최대 3개
+            query = f"{member_name} {keyword}"
             params = {
-                "Key": ASSEMBLY_API_KEY,
-                "Type": "json",
-                "pIndex": 1,
-                "pSize": 10,
-                "MONA_CD": member_mona_cd,
-                "SEARCH_WORD": keyword,
+                "query": query,
+                "display": 5,
+                "sort": "date",  # 최신순
             }
             try:
-                resp = httpx.get(url, params=params, timeout=20)
-                data = resp.json()
-                api_data = data.get("nrypmbwncpfmvoecp", [])
-                if isinstance(api_data, list) and len(api_data) >= 2:
-                    rows = api_data[1].get("row", [])
-                    for row in rows:
-                        content = row.get("SPEAK_CONT", "")
-                        if content and len(content) > 10:
-                            speeches.append(content[:200])  # 200자 제한
+                resp = httpx.get(NAVER_NEWS_URL, headers=headers, params=params, timeout=15)
+                resp.raise_for_status()
+                items = resp.json().get("items", [])
+                for item in items:
+                    # HTML 태그 제거
+                    title = re.sub(r"<[^>]+>", "", item.get("title", ""))
+                    desc = re.sub(r"<[^>]+>", "", item.get("description", ""))
+                    text = f"{title}. {desc}".strip()
+                    if len(text) > 20:
+                        snippets.append(text[:300])
             except Exception as e:
-                print(f"[Pipeline] 발언 검색 오류 ({keyword}): {e}")
+                print(f"[Pipeline] 뉴스 검색 오류 ({query}): {e}")
 
-        return speeches[:5]  # 최대 5개 발언
+        return snippets[:5]  # 최대 5개
 
     # ─── GPT 분류 ─────────────────────────────────────────────
 
@@ -202,8 +211,8 @@ class ReactionPipeline:
                 name = member["name"]
                 total_processed += 1
 
-                # 발언 검색
-                speeches = self.fetch_speeches(mona_cd, keywords)
+                # 뉴스 검색 (의원명 + 이슈 키워드)
+                speeches = self.fetch_speeches(name, keywords)
 
                 # GPT 분류
                 result = self.classify_stance(issue_title, speeches)
@@ -219,7 +228,7 @@ class ReactionPipeline:
                     "data_date": today,
                 }
 
-                self._sb_upsert("issue_reactions", [row])
+                self._sb_upsert("issue_reactions", [row], on_conflict="issue_id,member_id,data_date")
                 total_saved += 1
 
                 stance_display = result["stance"]
