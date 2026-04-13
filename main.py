@@ -16,6 +16,8 @@ import os
 import sys
 import random
 from pathlib import Path
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 # 에이전트 임포트
 sys.path.insert(0, str(Path(__file__).parent))
@@ -111,6 +113,35 @@ async def startup_retry_stuck_matching():
             print("[STARTUP] 유실된 매칭 없음")
     except Exception as e:
         print(f"[STARTUP] 유실 매칭 확인 실패: {e}")
+
+
+# ─── 반응 파이프라인 스케줄러 (매일 KST 02:00 = UTC 17:00) ────────────
+_scheduler = AsyncIOScheduler()
+
+def _run_reaction_pipeline():
+    """APScheduler에서 호출되는 파이프라인 실행 함수"""
+    try:
+        from services.reaction_pipeline import ReactionPipeline
+        print("[Scheduler] reaction_pipeline 시작")
+        ReactionPipeline().run()
+        print("[Scheduler] reaction_pipeline 완료")
+    except Exception as e:
+        print(f"[Scheduler] reaction_pipeline 오류: {e}")
+
+@app.on_event("startup")
+async def startup_scheduler():
+    _scheduler.add_job(
+        _run_reaction_pipeline,
+        CronTrigger(hour=17, minute=0, timezone="UTC"),  # KST 02:00
+        id="reaction_pipeline",
+        replace_existing=True,
+    )
+    _scheduler.start()
+    print("[Scheduler] 반응 파이프라인 스케줄 등록 완료 (매일 UTC 17:00)")
+
+@app.on_event("shutdown")
+async def shutdown_scheduler():
+    _scheduler.shutdown(wait=False)
 
 
 # ============== 에이전트 활동 로그 시스템 ==============
