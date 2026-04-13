@@ -35,6 +35,7 @@ from services.ontology_matcher import process_report_ontology, add_or_merge_cand
 # MVP 라우터
 from routers.issues import router as issues_router
 from routers.letters import router as letters_router
+from routers.ai_polish import router as ai_router
 
 # FastAPI 앱
 app = FastAPI(
@@ -55,6 +56,7 @@ app.add_middleware(
 # MVP 라우터 등록
 app.include_router(issues_router)
 app.include_router(letters_router)
+app.include_router(ai_router)
 
 # 전역 에이전트 (7개)
 support_agent = SupportAgent()          # 1. 챗봇

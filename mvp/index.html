@@ -232,6 +232,33 @@
     /* ─── 에러 / 빈 상태 ────────────────────────────────── */
     .empty { text-align: center; padding: 48px 20px; color: var(--gray); }
     .empty p { margin-top: 8px; font-size: 14px; }
+
+    /* ─── 문의하기 전용 ──────────────────────────────────── */
+    .polish-row { display: flex; gap: 8px; margin-top: 8px; }
+    .polish-btn {
+      padding: 8px 14px; border-radius: 8px; border: 1px solid var(--blue);
+      background: var(--blue-light); color: var(--blue);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .polish-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .revert-btn {
+      padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border);
+      background: #fff; color: var(--gray);
+      font-size: 13px; cursor: pointer; display: none;
+    }
+    .disclaimer-box {
+      margin: 16px 0; padding: 12px 14px;
+      background: #fffbeb; border: 1px solid #fde68a;
+      border-radius: 8px; font-size: 13px; color: #92400e; line-height: 1.5;
+    }
+    .reply-rate-box {
+      margin-top: 16px; padding: 12px 14px;
+      background: var(--blue-light); border-radius: 8px;
+      font-size: 13px; color: var(--blue); text-align: center;
+    }
+    .reply-rate-box strong { font-size: 20px; font-weight: 800; }
+    .optional-label { font-size: 11px; color: var(--gray); font-weight: 400; margin-left: 4px; }
   </style>
 </head>
 <body>
@@ -249,7 +276,7 @@
   <!-- ─── 화면 1: 홈 (이슈 목록) ─────────────────────────── -->
   <div class="screen active" id="screen-home">
     <div class="home-hero">
-      <h2>우리 의원은<br>어디에 서 있나요?</h2>
+      <h2>우리 의원은 어디에 서 있나요?<br><span style="font-size:18px;font-weight:600;opacity:0.9">내 문제도 해결해 주나요?</span></h2>
       <p>광주 시민이 관심 갖는 정책 이슈마다<br>의원의 찬성/반대/침묵을 AI가 분석합니다</p>
     </div>
 
@@ -341,16 +368,93 @@
     </div>
   </div>
 
+  <!-- ─── 화면 5: 문의하기 ─────────────────────────────────── -->
+  <div class="screen" id="screen-inquiry">
+    <div class="letter-form">
+      <div class="to-member-box" id="inquiry-member-box"></div>
+
+      <div class="form-group">
+        <label class="form-label">내 지역구 <span class="optional-label">(선택)</span></label>
+        <select class="form-input" id="inquiry-district">
+          <option value="">선택 안 함</option>
+          <option value="광주 광산구갑">광주 광산구갑</option>
+          <option value="광주 광산구을">광주 광산구을</option>
+          <option value="광주 동구남구갑">광주 동구남구갑</option>
+          <option value="광주 동구남구을">광주 동구남구을</option>
+          <option value="광주 북구갑">광주 북구갑</option>
+          <option value="광주 북구을">광주 북구을</option>
+          <option value="광주 서구갑">광주 서구갑</option>
+          <option value="광주 서구을">광주 서구을</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">닉네임 <span class="optional-label">(선택)</span></label>
+        <input type="text" class="form-input" id="inquiry-nickname"
+               placeholder="예: 광주 시민" maxlength="20">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">문의 내용 <span style="color:#c81e1e">*</span></label>
+        <textarea class="form-textarea" id="inquiry-content"
+                  placeholder="의원님께 문의하고 싶은 내용을 적어주세요.&#10;(100자 이상)"
+                  oninput="updateInquiryCharCount()"></textarea>
+        <div class="char-count"><span id="inquiry-char-count">0</span>자 / 최소 100자</div>
+        <div class="polish-row">
+          <button class="polish-btn" id="polish-btn" onclick="polishInquiry()">✨ AI로 다듬기</button>
+          <button class="revert-btn" id="revert-btn" onclick="revertInquiry()">↩ 되돌리기</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">답변 알림 이메일 <span class="optional-label">(선택)</span></label>
+        <input type="email" class="form-input" id="inquiry-email"
+               placeholder="의원실 답변 시 알려드려요">
+      </div>
+
+      <button class="submit-btn" id="inquiry-submit-btn" onclick="submitInquiry()">문의 보내기</button>
+      <p class="filter-notice">AI가 욕설/스팸 여부를 자동 검사합니다.<br>부적절한 내용은 발송이 차단될 수 있습니다.</p>
+    </div>
+  </div>
+
+  <!-- ─── 화면 6: 문의 전달됨 ────────────────────────────────── -->
+  <div class="screen" id="screen-inquiry-done">
+    <div class="done-screen">
+      <div class="done-icon">✓</div>
+      <div class="done-title">전달됐습니다</div>
+      <div class="done-subtitle" id="inquiry-done-subtitle"></div>
+
+      <div class="done-meta" id="inquiry-done-meta"></div>
+
+      <div class="disclaimer-box">
+        ⚠️ 의원실에서 답변이 오지 않을 수 있습니다.<br>
+        답변 여부는 정책AI에 공개되며, 답변 내용은 비공개입니다.
+      </div>
+
+      <div class="reply-rate-box" id="inquiry-reply-rate-box" style="display:none"></div>
+
+      <div class="counter-box">
+        <div class="counter-num" id="inquiry-done-counter">-</div>
+        <div class="counter-label">지금까지 광주 시민이 보낸 문의</div>
+      </div>
+
+      <div class="done-actions">
+        <button class="btn-share" onclick="shareInquiryResult()">이미지로 저장</button>
+        <button class="btn-more" onclick="showHome()">다른 이슈 보기</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ─── 하단 탭 바 ──────────────────────────────────────── -->
   <nav class="tab-bar" id="tab-bar">
-    <button class="tab-btn active" onclick="showHome()">
+    <button class="tab-btn active" id="tab-issues" onclick="showHome()">
       <span class="icon">📋</span>이슈
     </button>
-    <button class="tab-btn" onclick="alert('준비 중입니다')">
-      <span class="icon">👤</span>우리 의원
+    <button class="tab-btn" id="tab-letter" onclick="showLetterTab()">
+      <span class="icon">✉️</span>편지
     </button>
-    <button class="tab-btn" onclick="alert('준비 중입니다')">
-      <span class="icon">ℹ️</span>소개
+    <button class="tab-btn" id="tab-inquiry" onclick="showInquiryTab()">
+      <span class="icon">💬</span>문의
     </button>
   </nav>
 
@@ -364,6 +468,7 @@ let state = {
   currentMember: null,
   letterResult: null,
   history: [],   // 화면 히스토리 스택
+  inquiryOriginalContent: null,  // AI 다듬기 전 원문 보존
 };
 
 // ─── 화면 전환 ───────────────────────────────────────────────
@@ -393,7 +498,7 @@ function showHome() {
   state.history = [];
   updateHeader('정책AI', '우리 의원은 어디에 서 있나요?', false);
   showScreen('home');
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+  setActiveTab('tab-issues');
   loadIssues();
   loadStats();
 }
@@ -659,6 +764,228 @@ function formatDate(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   return d.toLocaleDateString('ko-KR', {month:'long', day:'numeric'});
+}
+
+// ─── 탭 전환 헬퍼 ────────────────────────────────────────────
+function setActiveTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById(tabId);
+  if (el) el.classList.add('active');
+}
+
+function showLetterTab() {
+  setActiveTab('tab-letter');
+  if (state.currentMember) {
+    showLetterForm();
+  } else {
+    // 의원 미선택 시 홈으로 안내
+    updateHeader('편지 쓰기', '의원을 선택해주세요', false);
+    showScreen('home');
+    loadIssues();
+  }
+}
+
+function showInquiryTab() {
+  setActiveTab('tab-inquiry');
+  if (state.currentMember) {
+    showInquiryForm(state.currentMember.mona_cd, state.currentMember.name, state.currentMember.district);
+  } else {
+    // 의원 미선택 시 홈에서 선택 안내
+    updateHeader('문의하기', '의원을 선택해주세요', false);
+    showScreen('home');
+    loadIssues();
+    alert('이슈를 선택한 후 의원을 클릭하면 문의할 수 있어요.');
+  }
+}
+
+// ─── 화면 5: 문의하기 ────────────────────────────────────────
+function showInquiryForm(monaCd, memberName, memberDistrict) {
+  if (monaCd) {
+    state.currentMember = { mona_cd: monaCd, name: memberName, district: memberDistrict };
+  }
+  if (!state.currentMember) {
+    alert('문의를 보낼 의원을 먼저 선택해주세요');
+    return;
+  }
+
+  state.history.push(() => showIssueDetail(state.currentIssue?.id));
+  updateHeader('문의하기', state.currentMember.name + ' 의원님께', true);
+  setActiveTab('tab-inquiry');
+  showScreen('inquiry');
+
+  document.getElementById('inquiry-member-box').innerHTML = `
+    <div class="to-label">문의 대상</div>
+    <div class="to-name">${escHtml(state.currentMember.name)} 의원님</div>
+    <div class="to-district">${escHtml(state.currentMember.district)}</div>
+  `;
+  document.getElementById('inquiry-content').value = '';
+  document.getElementById('inquiry-char-count').textContent = '0';
+  document.getElementById('inquiry-nickname').value = '';
+  document.getElementById('inquiry-email').value = '';
+  document.getElementById('revert-btn').style.display = 'none';
+  state.inquiryOriginalContent = null;
+}
+
+function selectMemberForInquiry(monaCd, name, district) {
+  state.currentMember = { mona_cd: monaCd, name, district };
+  showInquiryForm();
+}
+
+function updateInquiryCharCount() {
+  const len = document.getElementById('inquiry-content').value.length;
+  const el = document.getElementById('inquiry-char-count');
+  el.textContent = len;
+  el.style.color = len >= 100 ? 'var(--green)' : 'var(--red)';
+}
+
+async function polishInquiry() {
+  const content = document.getElementById('inquiry-content').value.trim();
+  if (content.length < 10) {
+    alert('먼저 문의 내용을 입력해주세요');
+    return;
+  }
+
+  const btn = document.getElementById('polish-btn');
+  btn.disabled = true;
+  btn.textContent = '다듬는 중...';
+
+  try {
+    const r = await fetch(API + '/api/ai/polish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, type: 'inquiry' }),
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.detail || '오류');
+
+    // 원문 보존 후 교체
+    state.inquiryOriginalContent = content;
+    document.getElementById('inquiry-content').value = data.polished;
+    updateInquiryCharCount();
+    document.getElementById('revert-btn').style.display = 'block';
+  } catch(e) {
+    alert('AI 다듬기에 실패했습니다. 다시 시도해주세요.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ AI로 다듬기';
+  }
+}
+
+function revertInquiry() {
+  if (state.inquiryOriginalContent) {
+    document.getElementById('inquiry-content').value = state.inquiryOriginalContent;
+    updateInquiryCharCount();
+    state.inquiryOriginalContent = null;
+    document.getElementById('revert-btn').style.display = 'none';
+  }
+}
+
+async function submitInquiry() {
+  const content = document.getElementById('inquiry-content').value.trim();
+  const nickname = document.getElementById('inquiry-nickname').value.trim() || '시민';
+  const district = document.getElementById('inquiry-district').value;
+  const email = document.getElementById('inquiry-email').value.trim() || null;
+  const btn = document.getElementById('inquiry-submit-btn');
+
+  if (content.length < 100) {
+    alert('문의 내용을 100자 이상 작성해주세요 (' + content.length + '자)');
+    return;
+  }
+  if (!state.currentMember) {
+    alert('의원을 선택해주세요');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '발송 중...';
+
+  try {
+    const body = {
+      mona_cd: state.currentMember.mona_cd,
+      content,
+      nickname,
+      sender_district: district,
+      issue_id: state.currentIssue?.id || null,
+      letter_type: 'inquiry',
+      citizen_email: email,
+    };
+    const r = await fetch(API + '/api/letters', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+
+    if (!r.ok) {
+      if (data.detail?.blocked) {
+        alert('문의 발송이 차단됐습니다:\n' + (data.detail.reason || '부적절한 내용'));
+      } else {
+        alert('오류가 발생했습니다: ' + (data.detail || '다시 시도해주세요'));
+      }
+      return;
+    }
+
+    showInquiryDoneScreen(data);
+
+  } catch(e) {
+    alert('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '문의 보내기';
+  }
+}
+
+// ─── 화면 6: 문의 전달됨 ─────────────────────────────────────
+function showInquiryDoneScreen(data) {
+  state.history = [];
+  updateHeader('전달됐습니다', '', false);
+  setActiveTab('tab-inquiry');
+  showScreen('inquiry-done');
+
+  const sentAt = data.sent_at ? new Date(data.sent_at) : new Date();
+  const dateStr = sentAt.toLocaleDateString('ko-KR', {year:'numeric',month:'long',day:'numeric'});
+  const timeStr = sentAt.toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit'});
+  const shortId = (data.letter_id || '').slice(0, 8).toUpperCase();
+
+  document.getElementById('inquiry-done-subtitle').textContent =
+    `${data.member_name} 의원실에 방금 문의가 전달됐어요`;
+
+  document.getElementById('inquiry-done-meta').innerHTML = `
+    <div class="meta-row">
+      <span class="meta-label">전달 일시</span>
+      <span class="meta-value">${dateStr} ${timeStr}</span>
+    </div>
+    <div class="meta-row">
+      <span class="meta-label">문의 번호</span>
+      <span class="meta-value">#${shortId}</span>
+    </div>
+    <div class="meta-row">
+      <span class="meta-label">받은 의원</span>
+      <span class="meta-value">${escHtml(data.member_name)} 의원님</span>
+    </div>
+  `;
+
+  // 응답률 표시
+  const rateBox = document.getElementById('inquiry-reply-rate-box');
+  if (data.reply_rate_pct !== null && data.reply_rate_pct !== undefined) {
+    rateBox.style.display = 'block';
+    rateBox.innerHTML = `${escHtml(data.member_name)} 의원 응답률<br><strong>${data.reply_rate_pct}%</strong>`;
+  } else {
+    rateBox.style.display = 'none';
+  }
+
+  // 문의 누적 카운터
+  const inquiriesSent = data.inquiries_sent ?? data.total_sent ?? 0;
+  document.getElementById('inquiry-done-counter').textContent = Number(inquiriesSent).toLocaleString() + '건';
+}
+
+function shareInquiryResult() {
+  const text = `정책AI를 통해 광주 의원에게 문의를 보냈습니다!\njeongchaek.ai`;
+  if (navigator.share) {
+    navigator.share({ title: '정책AI 시민문의', text }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(text).then(() => alert('링크가 복사됐습니다'));
+  }
 }
 
 // ─── 초기화 ──────────────────────────────────────────────────

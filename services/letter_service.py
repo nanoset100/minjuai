@@ -55,6 +55,22 @@ EMAIL_BODY_TEMPLATE = """안녕하세요, {member_name} 의원님.
 회신은 이 이메일로 보내주시면 시민에게 전달됩니다.
 """
 
+# 문의 이메일 본문 템플릿
+INQUIRY_BODY_TEMPLATE = """안녕하세요, {member_name} 의원님.
+정책AI 플랫폼을 통해 지역구 시민의 문의가 전달됩니다.
+
+---
+보낸 사람: {nickname} ({sender_district} 시민)
+
+[문의 내용]
+{content}
+---
+
+* 이 문의는 "내 지역구 의원이 내 문제를 해결해 줄 수 있나요?" 질문으로 접수됐습니다.
+* 정책AI(jeongchaek.ai) 시민 참여 플랫폼을 통해 발송됐습니다.
+* 회신은 이 이메일로 보내주시면 시민에게 전달됩니다.
+"""
+
 
 class LetterService:
     def __init__(self):
@@ -164,6 +180,13 @@ class LetterService:
 
     # ─── 메인: 편지 제출 ─────────────────────────────────────
 
+    def get_reply_rate(self, mona_cd: str) -> dict:
+        """의원별 응답률 조회"""
+        rows = self._sb_get("member_reply_rates", f"?member_id=eq.{mona_cd}&limit=1")
+        if rows:
+            return rows[0]
+        return {"member_id": mona_cd, "total_inquiries": 0, "total_replied": 0, "reply_rate_pct": None}
+
     def submit_letter(
         self,
         mona_cd: str,
@@ -171,9 +194,11 @@ class LetterService:
         nickname: str = "시민",
         sender_district: str = "",
         issue_id: Optional[str] = None,
+        letter_type: str = "letter",
+        citizen_email: Optional[str] = None,
     ) -> dict:
         """
-        편지 제출 엔드포인트에서 호출.
+        편지/문의 제출 엔드포인트에서 호출.
         반환: {"success": bool, "letter_id": str, "total_sent": int, "blocked": bool, "reason": str}
         """
         # 1. 의원 정보 조회
@@ -191,7 +216,6 @@ class LetterService:
         # 3. 스팸 필터
         filter_result = self.filter_letter(content)
         if filter_result.get("blocked"):
-            # 차단된 편지도 DB에 기록 (통계 목적)
             self._sb_insert("letters", {
                 "member_id": mona_cd,
                 "issue_id": issue_id,
@@ -200,6 +224,8 @@ class LetterService:
                 "sender_district": sender_district,
                 "status": "blocked",
                 "block_reason": filter_result.get("reason"),
+                "letter_type": letter_type,
+                "citizen_email": citizen_email,
             })
             return {
                 "success": False,
@@ -215,18 +241,30 @@ class LetterService:
             "nickname": nickname,
             "sender_district": sender_district,
             "status": "pending",
+            "letter_type": letter_type,
+            "citizen_email": citizen_email,
         })
         letter_id = letter["id"]
 
-        # 5. 이메일 발송
-        body = EMAIL_BODY_TEMPLATE.format(
-            member_name=member["name"],
-            nickname=nickname,
-            sender_district=sender_district or "광주",
-            issue_title=issue_title,
-            content=content,
-        )
-        subject = f"[정책AI 시민편지] {member['name']} 의원님께"
+        # 5. 이메일 발송 (편지/문의 분기)
+        if letter_type == "inquiry":
+            subject = f"[정책AI 시민문의] {member['name']} 의원님께"
+            body = INQUIRY_BODY_TEMPLATE.format(
+                member_name=member["name"],
+                nickname=nickname,
+                sender_district=sender_district or "광주",
+                content=content,
+            )
+        else:
+            subject = f"[정책AI 시민편지] {member['name']} 의원님께"
+            body = EMAIL_BODY_TEMPLATE.format(
+                member_name=member["name"],
+                nickname=nickname,
+                sender_district=sender_district or "광주",
+                issue_title=issue_title,
+                content=content,
+            )
+
         sent = self.send_email(
             to_email=member["email"],
             to_name=f"{member['name']} 의원실",
@@ -241,9 +279,14 @@ class LetterService:
         else:
             self._sb_update("letters", letter_id, {"status": "failed"})
 
-        # 7. 누적 카운터 조회
+        # 7. 누적 카운터 + 응답률 조회
         stats = self._sb_get("letter_stats")
         total_sent = stats[0]["total_sent"] if stats else 0
+
+        reply_rate_pct = None
+        if letter_type == "inquiry":
+            rate_data = self.get_reply_rate(mona_cd)
+            reply_rate_pct = rate_data.get("reply_rate_pct")
 
         return {
             "success": sent,
@@ -252,4 +295,5 @@ class LetterService:
             "member_name": member["name"],
             "sent_at": now if sent else None,
             "blocked": False,
+            "reply_rate_pct": reply_rate_pct,
         }
