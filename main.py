@@ -159,6 +159,28 @@ def manual_run_pipeline():
         return {"success": False, "error": str(e), "trace": traceback.format_exc()}
 
 
+@app.get("/api/admin/test-openai")
+def test_openai():
+    """OpenAI 연결 테스트 — 환경변수 및 API 키 확인"""
+    import os
+    key = os.getenv("OPENAI_API_KEY", "")
+    if not key:
+        return {"ok": False, "error": "OPENAI_API_KEY 환경변수 없음"}
+    masked = key[:8] + "..." + key[-4:]
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=key)
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": "안녕 한 단어로 대답해"}],
+            max_tokens=10,
+        )
+        answer = resp.choices[0].message.content.strip()
+        return {"ok": True, "key": masked, "answer": answer}
+    except Exception as e:
+        return {"ok": False, "key": masked, "error": str(e)}
+
+
 # ============== 에이전트 활동 로그 시스템 ==============
 
 # 실시간 활동 로그 (최근 100개 유지)
