@@ -146,6 +146,19 @@ async def shutdown_scheduler():
     _scheduler.shutdown(wait=False)
 
 
+@app.post("/api/admin/run-pipeline")
+def manual_run_pipeline():
+    """파이프라인 수동 실행 — 관리자용 (디버깅/테스트)"""
+    import traceback
+    try:
+        from services.reaction_pipeline import ReactionPipeline
+        pipeline = ReactionPipeline()
+        pipeline.run()
+        return {"success": True, "message": "파이프라인 실행 완료"}
+    except Exception as e:
+        return {"success": False, "error": str(e), "trace": traceback.format_exc()}
+
+
 # ============== 에이전트 활동 로그 시스템 ==============
 
 # 실시간 활동 로그 (최근 100개 유지)
