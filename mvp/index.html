@@ -368,7 +368,20 @@
     </div>
   </div>
 
-  <!-- ─── 화면 5: 문의하기 ─────────────────────────────────── -->
+  <!-- ─── 화면 5: 의원 선택 (문의용) ──────────────────────────── -->
+  <div class="screen" id="screen-inquiry-select">
+    <div style="padding:20px 16px 8px">
+      <p style="font-size:14px;color:#6b7280;line-height:1.6">
+        문의를 보낼 광주 의원을 선택해주세요.<br>
+        <span style="font-size:12px">내 지역구 의원이 내 문제를 해결해 줄 수 있는지 직접 물어볼 수 있어요.</span>
+      </p>
+    </div>
+    <div id="inquiry-member-select-list">
+      <div class="loading"><div class="spinner"></div>의원 목록 불러오는 중...</div>
+    </div>
+  </div>
+
+  <!-- ─── 화면 6: 문의하기 ─────────────────────────────────── -->
   <div class="screen" id="screen-inquiry">
     <div class="letter-form">
       <div class="to-member-box" id="inquiry-member-box"></div>
@@ -790,11 +803,44 @@ function showInquiryTab() {
   if (state.currentMember) {
     showInquiryForm(state.currentMember.mona_cd, state.currentMember.name, state.currentMember.district);
   } else {
-    // 의원 미선택 시 홈에서 선택 안내
-    updateHeader('문의하기', '의원을 선택해주세요', false);
-    showScreen('home');
-    loadIssues();
-    alert('이슈를 선택한 후 의원을 클릭하면 문의할 수 있어요.');
+    showInquirySelect();
+  }
+}
+
+async function showInquirySelect() {
+  updateHeader('문의하기', '의원을 선택해주세요', false);
+  setActiveTab('tab-inquiry');
+  showScreen('inquiry-select');
+
+  const list = document.getElementById('inquiry-member-select-list');
+  list.innerHTML = '<div class="loading"><div class="spinner"></div>의원 목록 불러오는 중...</div>';
+
+  try {
+    const r = await fetch(API + '/api/members');
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    const members = data.members || [];
+
+    if (members.length === 0) {
+      list.innerHTML = '<div class="empty"><p>의원 정보를 불러오지 못했습니다</p></div>';
+      return;
+    }
+
+    list.innerHTML = members.map(m => `
+      <div class="member-row" onclick="selectMemberForInquiry('${m.mona_cd}', '${escHtml(m.name)}', '${escHtml(m.district)}')">
+        <img class="member-photo"
+             src="${m.photo_url || ''}"
+             onerror="this.style.display='none'"
+             alt="${escHtml(m.name)}">
+        <div class="member-info">
+          <div class="name">${escHtml(m.name)}</div>
+          <div class="district">${escHtml(m.district)}</div>
+        </div>
+        <span style="color:var(--blue);font-size:13px;font-weight:600">선택 →</span>
+      </div>
+    `).join('');
+  } catch {
+    list.innerHTML = '<div class="empty"><p>의원 목록을 불러오지 못했습니다.<br>잠시 후 다시 시도해주세요.</p></div>';
   }
 }
 
@@ -808,7 +854,11 @@ function showInquiryForm(monaCd, memberName, memberDistrict) {
     return;
   }
 
-  state.history.push(() => showIssueDetail(state.currentIssue?.id));
+  // 이슈에서 왔으면 이슈로, 문의 탭에서 왔으면 의원 선택으로 뒤로가기
+  const backFn = state.currentIssue
+    ? () => showIssueDetail(state.currentIssue.id)
+    : showInquirySelect;
+  state.history.push(backFn);
   updateHeader('문의하기', state.currentMember.name + ' 의원님께', true);
   setActiveTab('tab-inquiry');
   showScreen('inquiry');
