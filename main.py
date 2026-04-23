@@ -163,7 +163,7 @@ def manual_run_pipeline():
 def test_openai():
     """OpenAI 연결 테스트 — 환경변수 및 API 키 확인"""
     import os
-    key = os.getenv("OPENAI_API_KEY", "")
+    key = os.getenv("OPENAI_API_KEY", "").strip()
     if not key:
         return {"ok": False, "error": "OPENAI_API_KEY 환경변수 없음"}
     masked = key[:8] + "..." + key[-4:]

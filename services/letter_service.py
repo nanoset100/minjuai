@@ -19,7 +19,7 @@ from openai import OpenAI
 
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY", "")
 LETTER_FROM_EMAIL = os.getenv("LETTER_FROM_EMAIL", "noreply@jeongchaek.ai")
 LETTER_FROM_NAME = os.getenv("LETTER_FROM_NAME", "정책AI 시민편지")

@@ -28,7 +28,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 
 # OpenAI
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 
 # 네이버 뉴스 검색 API
 NAVER_CLIENT_ID = os.getenv("NAVER_CLIENT_ID", "")

@@ -16,7 +16,7 @@ from openai import OpenAI
 
 router = APIRouter(prefix="/api", tags=["ai"])
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 
 # ─── Rate Limiter (외부 라이브러리 없이 in-memory) ─────────────
 # {ip: deque([timestamp, ...])}
