@@ -7,3 +7,17 @@ data/logs/
 nul
 tmp_*.json
 tmp_*.txt
+
+# 테스트/임시 파일
+csv_check.json
+docx_check.json
+test_stats.txt
+data/district_mapping_test.txt
+data/districts_check.txt
+data/index_test.txt
+data/issue_man_result.txt
+data/issue_man_test.txt
+docs/pdf_extract.txt
+
+# 로컬 전용 설정
+.claude/settings.local.json

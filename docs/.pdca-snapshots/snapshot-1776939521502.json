@@ -1,0 +1,1540 @@
+{
+  "timestamp": "2026-04-23T10:18:41.499Z",
+  "reason": "compaction",
+  "status": {
+    "version": "2.0",
+    "lastUpdated": "2026-04-23T10:16:13.044Z",
+    "activeFeatures": [
+      "문의기능",
+      "test017AI_Party_claudecode",
+      "agents",
+      "minjuai",
+      "migrations",
+      "server",
+      "docs",
+      "고향마켓",
+      "박우량군수자료",
+      "gohyang_market",
+      "scripts",
+      "nanos"
+    ],
+    "primaryFeature": "문의기능",
+    "features": {
+      "문의기능": {
+        "phase": "design",
+        "phaseNumber": 2,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {
+          "plan": "docs/01-plan/features/문의기능.plan.md",
+          "design": "docs/02-design/features/문의기능.design.md"
+        },
+        "timestamps": {
+          "started": "2026-04-13T09:00:00.000Z",
+          "lastUpdated": "2026-04-13T09:05:00.000Z"
+        },
+        "lastFile": "docs/02-design/features/문의기능.design.md"
+      },
+      "test017AI_Party_claudecode": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-22T00:01:12.412Z",
+          "lastUpdated": "2026-04-23T10:16:13.043Z"
+        },
+        "lastFile": "M:\\MyProject777\\test017AI_Party_claudecode\\main.py"
+      },
+      "agents": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-22T00:02:14.899Z",
+          "lastUpdated": "2026-04-08T00:58:46.107Z"
+        },
+        "lastFile": "M:\\MyProject777\\test017AI_Party_claudecode\\agents\\issue_man_agent.py"
+      },
+      "minjuai": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-22T02:51:11.996Z",
+          "lastUpdated": "2026-03-22T02:51:11.996Z"
+        },
+        "lastFile": "M:/MyProject777/minjuai_app/android/app/src/main/kotlin/com/minjuai/app/MainActivity.kt"
+      },
+      "migrations": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-22T05:08:07.515Z",
+          "lastUpdated": "2026-03-22T05:09:05.281Z"
+        },
+        "lastFile": "M:/MyProject777/test017AI_Party_claudecode/migrations/execute_migration.py"
+      },
+      "server": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-23T04:47:32.639Z",
+          "lastUpdated": "2026-04-01T10:46:22.194Z"
+        },
+        "lastFile": "M:\\MyProject777\\logosflow\\server\\main.py"
+      },
+      "docs": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-23T08:40:55.625Z",
+          "lastUpdated": "2026-03-23T08:40:55.625Z"
+        },
+        "lastFile": "M:\\MyProject777\\gohyang_market\\docs\\generate_pdf.py"
+      },
+      "고향마켓": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-23T11:41:11.538Z",
+          "lastUpdated": "2026-03-23T11:42:31.534Z"
+        },
+        "lastFile": "M:\\디지털작업방\\고향마켓\\create_pptx.js"
+      },
+      "박우량군수자료": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-24T00:21:21.778Z",
+          "lastUpdated": "2026-03-24T00:24:42.528Z"
+        },
+        "lastFile": "M:\\디지털작업방\\박우량군수자료\\generate_pptx.js"
+      },
+      "gohyang_market": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-24T06:14:52.596Z",
+          "lastUpdated": "2026-03-24T06:45:16.323Z"
+        },
+        "lastFile": "M:/MyProject777/gohyang_market/generate_splash.py"
+      },
+      "scripts": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-03-27T06:43:20.709Z",
+          "lastUpdated": "2026-04-08T13:01:00.642Z"
+        },
+        "lastFile": "M:\\MyProject777\\test017AI_Party_claudecode\\scripts\\test_assembly_emails.py"
+      },
+      "nanos": {
+        "phase": "do",
+        "phaseNumber": 3,
+        "matchRate": null,
+        "iterationCount": 0,
+        "requirements": [],
+        "documents": {},
+        "timestamps": {
+          "started": "2026-04-07T00:07:13.658Z",
+          "lastUpdated": "2026-04-07T00:33:29.455Z"
+        },
+        "lastFile": "C:/Users/nanos/fix_ipad_final.py"
+      }
+    },
+    "pipeline": {
+      "currentPhase": 1,
+      "level": "Dynamic",
+      "phaseHistory": []
+    },
+    "session": {
+      "startedAt": "2026-02-03T00:47:29.609Z",
+      "onboardingCompleted": false,
+      "lastActivity": "2026-04-23T10:16:13.044Z"
+    },
+    "history": [
+      {
+        "timestamp": "2026-03-22T00:01:12.412Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T00:02:00.418Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T00:02:14.899Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T00:10:50.751Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T01:01:24.868Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T01:20:50.385Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T01:21:02.556Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T01:21:22.531Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T01:39:48.607Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T02:51:11.996Z",
+        "feature": "minjuai",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T03:34:12.370Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T03:34:18.223Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T03:34:44.061Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T03:43:55.680Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T03:44:37.710Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T05:08:07.515Z",
+        "feature": "migrations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T05:09:05.281Z",
+        "feature": "migrations",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T05:19:14.352Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T05:19:22.174Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T05:19:26.052Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T05:20:21.219Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T08:39:04.882Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T08:50:06.240Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T08:50:10.442Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T08:50:11.348Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T08:50:11.824Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T08:50:12.299Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T08:50:22.342Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:14:30.189Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:15:32.288Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:16:46.612Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:16:59.545Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:17:07.231Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:17:28.295Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:17:36.657Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:17:54.144Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:18:10.695Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:18:14.316Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:18:27.900Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:18:39.580Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:18:47.643Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:18:52.436Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:19:02.813Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:19:09.801Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:19:17.877Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:19:22.578Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:31:18.896Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:33:28.996Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:33:29.583Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:33:30.716Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:33:55.820Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:33:59.751Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:34:08.656Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:34:11.704Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:39:43.259Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:40:06.547Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:40:13.481Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:40:21.112Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:40:46.363Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:41:11.762Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:50:36.534Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T09:50:55.236Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T10:59:25.871Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T12:31:37.744Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T12:32:59.451Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T12:33:24.887Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T12:33:44.320Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T12:33:45.085Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T12:33:46.789Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T12:33:47.222Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T13:54:47.422Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T14:16:17.440Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T22:40:37.849Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T22:40:50.021Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-22T22:58:16.325Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T00:11:30.514Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T00:11:38.324Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T00:11:45.244Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T00:11:52.016Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T00:53:03.566Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T01:04:43.130Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T04:47:32.639Z",
+        "feature": "server",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T04:47:52.657Z",
+        "feature": "server",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T04:48:02.383Z",
+        "feature": "server",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T04:48:10.033Z",
+        "feature": "server",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T04:48:16.091Z",
+        "feature": "server",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T05:16:12.602Z",
+        "feature": "server",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T05:16:17.209Z",
+        "feature": "server",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T08:40:55.625Z",
+        "feature": "docs",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T11:41:11.538Z",
+        "feature": "고향마켓",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-23T11:42:31.534Z",
+        "feature": "고향마켓",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-24T00:21:21.778Z",
+        "feature": "박우량군수자료",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-24T00:24:16.550Z",
+        "feature": "박우량군수자료",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-24T00:24:19.627Z",
+        "feature": "박우량군수자료",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-24T00:24:24.633Z",
+        "feature": "박우량군수자료",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-24T00:24:31.425Z",
+        "feature": "박우량군수자료",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-24T00:24:36.475Z",
+        "feature": "박우량군수자료",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-24T00:24:42.528Z",
+        "feature": "박우량군수자료",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-24T06:14:52.596Z",
+        "feature": "gohyang_market",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-24T06:45:16.323Z",
+        "feature": "gohyang_market",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-25T11:18:18.481Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-25T11:18:25.908Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-25T11:18:47.662Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-25T11:18:54.007Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-25T12:00:03.416Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T06:42:17.319Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T06:42:22.134Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T06:43:06.299Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T06:43:20.709Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T06:43:33.034Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T06:43:49.600Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T06:44:26.613Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T06:44:51.210Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T06:56:30.309Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T07:25:25.983Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T07:25:38.076Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T07:32:20.696Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T07:34:10.359Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T07:38:02.304Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T07:38:09.565Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T07:38:13.845Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T07:42:34.669Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T07:47:57.250Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T07:48:13.880Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-27T08:03:40.238Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-28T12:17:13.378Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-30T04:53:07.846Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-03-31T23:36:14.881Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T00:07:00.187Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T00:07:08.216Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T00:36:47.243Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:51:37.570Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:51:44.566Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:51:50.355Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:51:55.296Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:52:00.984Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:52:06.905Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:52:12.380Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:52:24.084Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:52:33.760Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:52:42.069Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T06:53:03.867Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T07:09:32.617Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T07:10:02.596Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T10:14:47.629Z",
+        "feature": "server",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T10:25:41.644Z",
+        "feature": "server",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-01T10:46:22.194Z",
+        "feature": "server",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-02T00:16:53.881Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-02T00:17:16.794Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-02T00:17:26.763Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T05:27:36.198Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T05:27:44.354Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T05:27:51.324Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:34:17.529Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:34:35.632Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:34:40.441Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:34:47.227Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:34:58.402Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:35:33.634Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:35:49.818Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:36:03.186Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:53:06.456Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:53:13.738Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:53:23.260Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:53:37.160Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:53:46.801Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:54:07.174Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:57:37.188Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:57:51.121Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T06:58:02.094Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T07:18:12.024Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T07:43:33.418Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T07:57:33.018Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-06T07:57:54.169Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-07T00:07:13.658Z",
+        "feature": "nanos",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-07T00:08:05.986Z",
+        "feature": "nanos",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-07T00:19:39.277Z",
+        "feature": "nanos",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-07T00:19:54.813Z",
+        "feature": "nanos",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-07T00:25:06.158Z",
+        "feature": "nanos",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-07T00:26:10.449Z",
+        "feature": "nanos",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-07T00:27:22.865Z",
+        "feature": "nanos",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-07T00:33:29.455Z",
+        "feature": "nanos",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-08T00:58:37.420Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-08T00:58:46.107Z",
+        "feature": "agents",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-08T01:02:47.391Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-08T01:08:07.702Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-08T01:08:29.790Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-08T13:00:09.137Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-08T13:00:40.983Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-08T13:01:00.642Z",
+        "feature": "scripts",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-08T13:07:35.456Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:54:47.093Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:55:15.940Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:55:29.898Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:55:40.019Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:55:51.019Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:56:05.909Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:56:45.787Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:56:54.164Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:56:59.267Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:57:03.824Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T00:57:08.063Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-09T01:01:18.434Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T07:18:01.525Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T07:18:10.219Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T07:18:16.819Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T07:37:16.748Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T07:37:20.308Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T07:56:14.231Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T07:56:28.291Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T08:58:16.509Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T08:58:43.770Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T08:59:04.962Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T08:59:10.897Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T08:59:24.597Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T08:59:36.693Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-13T08:59:40.842Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-23T06:11:35.216Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-23T06:42:45.425Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-23T09:55:12.701Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-23T10:15:59.590Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-23T10:16:03.964Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-23T10:16:08.448Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      },
+      {
+        "timestamp": "2026-04-23T10:16:13.043Z",
+        "feature": "test017AI_Party_claudecode",
+        "phase": "do",
+        "action": "updated"
+      }
+    ]
+  }
+}
