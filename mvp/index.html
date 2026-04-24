@@ -106,6 +106,8 @@
     .member-info .name { font-size: 15px; font-weight: 600; }
     .member-info .district { font-size: 12px; color: var(--gray); margin-top: 2px; }
     .member-info .summary { font-size: 12px; color: #374151; margin-top: 4px; }
+    .member-info .ai-notice { font-size: 11px; color: #9ca3af; margin-top: 3px; }
+    .member-info .ai-notice a { color: #9ca3af; text-decoration: underline; }
     .stance-badge {
       padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 700;
       flex-shrink: 0;
@@ -574,7 +576,7 @@ async function showIssueDetail(issueId) {
 
     // 헤더
     const dateNotice = data.data_date
-      ? `<div class="data-date-notice">📅 ${data.data_date} 기준 데이터${data.is_stale ? ' · <strong>데이터 갱신 중</strong>' : ''}<br><small>AI 생성 · 오류 신고: jeongchaek.ai</small></div>`
+      ? `<div class="data-date-notice">📅 ${data.data_date} 기준 데이터${data.is_stale ? ' · <strong>데이터 갱신 중</strong>' : ''}<br><small>AI 생성 · <a href="mailto:nanpset91@gmail.com?subject=정책AI 오류 신고&body=이슈: ${encodeURIComponent(data.issue?.title || '')}%0A오류 내용: " style="color:inherit;text-decoration:underline">오류 신고</a></small></div>`
       : '<div class="data-date-notice">데이터 수집 중입니다</div>';
 
     document.getElementById('issue-detail-header').innerHTML = `
@@ -596,7 +598,7 @@ async function showIssueDetail(issueId) {
           <div class="member-info">
             <div class="name">${escHtml(r.member_name)}</div>
             <div class="district">${escHtml(r.member_district)}</div>
-            ${r.summary ? `<div class="summary">${escHtml(r.summary)}</div>` : ''}
+            ${r.summary ? `<div class="summary">${escHtml(r.summary)}</div><div class="ai-notice">AI 생성 · <a href="mailto:nanpset91@gmail.com?subject=정책AI 오류 신고&body=이슈: ${encodeURIComponent(state.currentIssue?.title || '')}%0A의원: ${encodeURIComponent(r.member_name)}%0A오류 내용: " onclick="event.stopPropagation()">오류 신고</a></div>` : ''}
           </div>
           <span class="stance-badge stance-${r.stance}">${r.stance}</span>
         </div>
