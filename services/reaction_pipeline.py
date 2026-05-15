@@ -148,9 +148,10 @@ class ReactionPipeline:
             )
             raw = response.choices[0].message.content.strip()
 
-            # JSON 파싱
-            if "```" in raw:
-                raw = raw.split("```")[1].replace("json", "").strip()
+            # JSON 파싱 — 백틱 코드블록 또는 순수 JSON 모두 처리
+            json_match = re.search(r'\{.*\}', raw, re.DOTALL)
+            if json_match:
+                raw = json_match.group(0)
             result = json.loads(raw)
 
             # confidence 임계값 강제 적용 (code-level enforcement)
@@ -168,11 +169,12 @@ class ReactionPipeline:
             return result
 
         except Exception as e:
-            print(f"[Pipeline] GPT 분류 오류: {e}")
+            err_msg = str(e)
+            print(f"[Pipeline] GPT 분류 오류: {err_msg}")
             return {
                 "stance": "수집중",
                 "confidence": 0.0,
-                "summary": "분류 중 오류 발생",
+                "summary": f"오류:{err_msg[:25]}",
                 "evidence": None
             }
 
