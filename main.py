@@ -492,7 +492,7 @@ async def get_member_stats():
 # ============== 챗봇 ==============
 
 @app.post("/api/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, _app=Depends(verify_app)):
     try:
         response = await support_agent.chat(
             user_message=request.message,
@@ -1441,7 +1441,7 @@ class SolutionRequest(BaseModel):
 
 
 @app.post("/api/solution")
-async def get_policy_solution(request: SolutionRequest):
+async def get_policy_solution(request: SolutionRequest, _app=Depends(verify_app)):
     """정책 솔루션 엔진 — 시민 질문에 근거 기반 해법 도출"""
     try:
         result = policy_research.solve_policy_question(supabase_admin, request.question)
